@@ -282,6 +282,10 @@ function getUrl() {
 		current: "https://api.weather.gov/stations/KGFL/observations/latest",
 		forecast: "https://api.weather.gov/gridpoints/ALY/63,79/forecast",
 	};
+	var schenectadyUrl = {
+		current: "https://api.weather.gov/stations/KALB/observations/latest",
+		forecast: "https://api.weather.gov/gridpoints/ALY/53,65/forecast",
+	};
     var houstonUrl = {
 		current: "https://api.weather.gov/stations/KSGR/observations/latest",
 		forecast: "https://api.weather.gov/gridpoints/HGX/55,92/forecast",
@@ -290,6 +294,8 @@ function getUrl() {
     switch ($("#location").find("li.active").text()) {
     case "Greenwich":
 	return greenwichUrl;
+    case "Schenectady":
+	return schenectadyUrl;
     case "Houston":
 	return houstonUrl;
     }
