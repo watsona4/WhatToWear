@@ -340,10 +340,13 @@ function getWeatherData(url) {
 
 	    var forecast = data.properties;
 
-	    var forecastday = forecast.periods[0];
-
-	    var high = forecast.periods[0].temperature;
-	    var low = forecast.periods[1].temperature;
+		var i;
+		var high, low;
+		for (i = 0; i < 2; ++i)
+			if (forecast.periods[i].isDaytime)
+				high = forecast.periods[i].temperature;
+			else
+				low = forecast.periods[i].temperature;
 
 	    $("#hilo").html("High: " + high.toFixed(0) + " &deg;F, " +
 			    "Low: " + low.toFixed(0) + " &deg;F");
