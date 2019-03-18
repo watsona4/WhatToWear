@@ -1,7 +1,7 @@
 var JACKET = true;
 
 function ClothingSelector() {
-    
+
     // localStorage.removeItem("Shirts");
     // localStorage.removeItem("ShortShirts");
     // localStorage.removeItem("LongShirts");
@@ -11,222 +11,222 @@ function ClothingSelector() {
     // localStorage.removeItem("Clothing");
 
     this.longShirts = ["blue check",
-		       "green check",
-		       "brown",
-		       "red blue"];
+                       "green check",
+                       "brown",
+                       "red blue"];
 
     this.shortShirts = ["red blue",
-			"light blue",
-			"green stripe",
-			"dark blue"];
-        
+                        "light blue",
+                        "green stripe",
+                        "dark blue"];
+
     this.sweaters = ["khaki",
-		     "olive",
-		     "green",
+                     "olive",
+                     "green",
                      "red",
-		     "charcoal",
-		     "navy"];
+                     "charcoal",
+                     "navy"];
 
     this.coats = ["navy",
-		  "grey",
-		  "brown",
-		  "charcoal",
-		  "tan"];
-        
+                  "grey",
+                  "brown",
+                  "charcoal",
+                  "tan"];
+
     this.pantss = ["khaki",
-		   "navy",
-		   "brown",
-		   "grey"];
-        
+                   "navy",
+                   "brown",
+                   "grey"];
+
     // Key is coat, value is list of pants that go with coat.
     this.coatData = {navy: ["grey",
-			    "tan",
-			    "khaki",
-			    "brown",
-			    "white"],
-		     tan: ["charcoal",
-			   "grey",
-			   "olive",
-			   "brown",
-			   "white"],
-		     brown: ["charcoal",
-			     "grey",
-			     "olive",
-			     "white"],
-		     olive: ["charcoal",
-			     "grey",
-			     "tan",
-			     "khaki",
-			     "brown"],
-		     grey: ["charcoal",
-			    "navy",
-			    "white"],
-		     blue: ["navy",
-			    "tan",
-			    "khaki",
-			    "white"],
-		     charcoal: ["grey",
-				"khaki"]
-		    };
-        
+                            "tan",
+                            "khaki",
+                            "brown",
+                            "white"],
+                     tan: ["charcoal",
+                           "grey",
+                           "olive",
+                           "brown",
+                           "white"],
+                     brown: ["charcoal",
+                             "grey",
+                             "olive",
+                             "white"],
+                     olive: ["charcoal",
+                             "grey",
+                             "tan",
+                             "khaki",
+                             "brown"],
+                     grey: ["charcoal",
+                            "navy",
+                            "white"],
+                     blue: ["navy",
+                            "tan",
+                            "khaki",
+                            "white"],
+                     charcoal: ["grey",
+                                "khaki"]
+                    };
+
     // Key is shirt, value is list of sweaters that *dont* go with shirt.
     this.shirtData = {"rust": ["khaki", "red", "green"],
                       "green check": ["olive", "green"],
-		       "blue check": [],
+                      "blue check": [],
                       "brown": ["khaki", "red", "green"],
                       "red blue": ["olive"]};
-        
+
     // Key is sweater, value is list of pants that *dont* go with sweater.
     this.sweaterData = {navy: ["navy"],
                         khaki: ["khaki"],
                         charcoal: ["grey"]};
- 
+
     // Key is sweater, value is list of coats that *dont* go with sweater.
     this.sweaterCoatData = {navy: ["navy"],
                             khaki: ["tan"],
                             charcoal: ["grey"]};
- 
+
     if (!("ShortShirts" in localStorage)) {
-	this.oldShortShirts = [];
-	this.shortShirt = "";
+        this.oldShortShirts = [];
+        this.shortShirt = "";
     }
     else {
-	this.oldShortShirts = JSON.parse(localStorage.ShortShirts);
-	this.shortShirt = this.oldShortShirts[this.oldShortShirts.length - 1];
+        this.oldShortShirts = JSON.parse(localStorage.ShortShirts);
+        this.shortShirt = this.oldShortShirts[this.oldShortShirts.length - 1];
     }
 
     if (!("LongShirts" in localStorage)) {
-	this.oldLongShirts = [];
-	this.longShirt = "";
+        this.oldLongShirts = [];
+        this.longShirt = "";
     }
     else {
-	this.oldLongShirts = JSON.parse(localStorage.LongShirts);
-	this.longShirt = this.oldLongShirts[this.oldLongShirts.length - 1];
+        this.oldLongShirts = JSON.parse(localStorage.LongShirts);
+        this.longShirt = this.oldLongShirts[this.oldLongShirts.length - 1];
     }
 
     if (!("Sweaters" in localStorage)) {
-	this.oldSweaters = "";
-	this.sweater = "";
+        this.oldSweaters = "";
+        this.sweater = "";
     }
     else {
-	this.oldSweaters = localStorage.Sweaters;
-	this.sweater = this.oldSweaters;
+        this.oldSweaters = localStorage.Sweaters;
+        this.sweater = this.oldSweaters;
     }
 
     if (!("Coats" in localStorage)) {
-	this.oldCoats = "";
-	this.coat = "";
+        this.oldCoats = "";
+        this.coat = "";
     }
     else {
-	this.oldCoats = localStorage.Coats;
-	this.coat = this.oldCoats;
+        this.oldCoats = localStorage.Coats;
+        this.coat = this.oldCoats;
     }
 
     if (!("Pants" in localStorage)) {
-	this.oldPants = "";
-	this.pants = "";
+        this.oldPants = "";
+        this.pants = "";
     }
     else {
-	this.oldPants = localStorage.Pants;
-	this.pants = this.oldPants;
+        this.oldPants = localStorage.Pants;
+        this.pants = this.oldPants;
     }
 
     this.getCombo = function() {
-	return {shortShirt: this.shortShirt,
-		longShirt: this.longShirt,
-		sweater: this.sweater,
-		coat: this.coat,
-		pants: this.pants};
+        return {shortShirt: this.shortShirt,
+                longShirt: this.longShirt,
+                sweater: this.sweater,
+                coat: this.coat,
+                pants: this.pants};
     };
 
     this.nextCombo = function() {
-	
-	var valid = false;
-	
-	while (!valid) {
-	    var idx = Math.floor(Math.random() * this.shortShirts.length);
-	    this.shortShirt = this.shortShirts[idx];
-	    if (!this.oldShortShirts.includes(this.shortShirt))
-		valid = true;
-	}
-	
-	valid = false;
-	
-	while (!valid) {
-	    var idx = Math.floor(Math.random() * this.longShirts.length);
-	    this.longShirt = this.longShirts[idx];
-	    if (!this.oldLongShirts.includes(this.longShirt))
-		valid = true;
-	}
-	
-	valid = false;
-	
-	while (!valid) {
-	    var idx = Math.floor(Math.random() * this.sweaters.length);
-	    this.sweater = this.sweaters[idx];
-	    if (this.sweater != this.oldSweaters &&
-		(!(this.shirt in this.shirtData) ||
-		 !this.shirtData[this.shirt].includes(this.sweater)))
-		valid = true;
-	}
 
-	valid = false;
-	
-	while (!valid) {
-	    var idx = Math.floor(Math.random() * this.coats.length);
-	    this.coat = this.coats[idx];
-	    if (this.coat != this.oldCoats)
-		valid = true;
-	}
+        var valid = false;
 
-	valid = false;
+        while (!valid) {
+            var idx = Math.floor(Math.random() * this.shortShirts.length);
+            this.shortShirt = this.shortShirts[idx];
+            if (!this.oldShortShirts.includes(this.shortShirt))
+                valid = true;
+        }
 
-	while (!valid) {
-	    var idx = Math.floor(Math.random() * this.pantss.length);
-	    this.pants = this.pantss[idx];
-	    if (this.coatData[this.coat].includes(this.pants) &&
-		(!(this.sweater in this.sweaterData) ||
-		 !this.sweaterData[this.sweater].includes(this.pants)) &&
-		(!(this.sweater in this.sweaterCoatData) ||
-		 !this.sweaterCoatData[this.sweater].includes(this.coat)))
-		valid = true;
-	}
+        valid = false;
 
-	this.saveData();
+        while (!valid) {
+            var idx = Math.floor(Math.random() * this.longShirts.length);
+            this.longShirt = this.longShirts[idx];
+            if (!this.oldLongShirts.includes(this.longShirt))
+                valid = true;
+        }
 
-	return this.getCombo();
+        valid = false;
+
+        while (!valid) {
+            var idx = Math.floor(Math.random() * this.sweaters.length);
+            this.sweater = this.sweaters[idx];
+            if (this.sweater != this.oldSweaters &&
+                (!(this.shirt in this.shirtData) ||
+                 !this.shirtData[this.shirt].includes(this.sweater)))
+                valid = true;
+        }
+
+        valid = false;
+
+        while (!valid) {
+            var idx = Math.floor(Math.random() * this.coats.length);
+            this.coat = this.coats[idx];
+            if (this.coat != this.oldCoats)
+                valid = true;
+        }
+
+        valid = false;
+
+        while (!valid) {
+            var idx = Math.floor(Math.random() * this.pantss.length);
+            this.pants = this.pantss[idx];
+            if (this.coatData[this.coat].includes(this.pants) &&
+                (!(this.sweater in this.sweaterData) ||
+                 !this.sweaterData[this.sweater].includes(this.pants)) &&
+                (!(this.sweater in this.sweaterCoatData) ||
+                 !this.sweaterCoatData[this.sweater].includes(this.coat)))
+                valid = true;
+        }
+
+        this.saveData();
+
+        return this.getCombo();
     }
 
     this.saveData = function () {
 
-	var shortArray = [];
+        var shortArray = [];
 
-	var shortShirtNum = Math.min(this.shortShirts.length - 1, 4);
-	if (this.oldShortShirts.length < shortShirtNum) {
-	    shortArray = this.oldShortShirts.slice();
-	}
-	else {
-	    shortArray = this.oldShortShirts.slice(1, shortShirtNum);
-	}
+        var shortShirtNum = Math.min(this.shortShirts.length - 1, 4);
+        if (this.oldShortShirts.length < shortShirtNum) {
+            shortArray = this.oldShortShirts.slice();
+        }
+        else {
+            shortArray = this.oldShortShirts.slice(1, shortShirtNum);
+        }
 
-	var longArray = [];
+        var longArray = [];
 
-	var longShirtNum = Math.min(this.longShirts.length - 1, 4);
-	if (this.oldLongShirts.length < longShirtNum) {
-	    longArray = this.oldLongShirts.slice();
-	}
-	else {
-	    longArray = this.oldLongShirts.slice(1, longShirtNum);
-	}
+        var longShirtNum = Math.min(this.longShirts.length - 1, 4);
+        if (this.oldLongShirts.length < longShirtNum) {
+            longArray = this.oldLongShirts.slice();
+        }
+        else {
+            longArray = this.oldLongShirts.slice(1, longShirtNum);
+        }
 
-	shortArray.push(this.shortShirt);
-	longArray.push(this.longShirt);
+        shortArray.push(this.shortShirt);
+        longArray.push(this.longShirt);
 
-	localStorage.ShortShirts = JSON.stringify(shortArray);
-	localStorage.LongShirts = JSON.stringify(longArray);
-	localStorage.Sweaters = this.sweater;
-	localStorage.Coats = this.coat;
-	localStorage.Pants = this.pants;
+        localStorage.ShortShirts = JSON.stringify(shortArray);
+        localStorage.LongShirts = JSON.stringify(longArray);
+        localStorage.Sweaters = this.sweater;
+        localStorage.Coats = this.coat;
+        localStorage.Pants = this.pants;
     }
 }
 
@@ -235,7 +235,7 @@ var selector = new ClothingSelector();
 function init() {
 
     $("#location a").on("shown.bs.tab", function (event) {
-	update();
+        update();
     });
 
     $("#location a").click(function () {
@@ -243,11 +243,11 @@ function init() {
     });
 
     $("#activity a").on("shown.bs.tab", function (event) {
-	getClothing();
-	if ($("#attireButton").button().is(":hidden")) {
-	    $("#attire").html("");
-	    $("#attireButton").button().show();
-	}
+        getClothing();
+        if ($("#attireButton").button().is(":hidden")) {
+            $("#attire").html("");
+            $("#attireButton").button().show();
+        }
     });
 
     $("#activity a").click(function () {
@@ -255,10 +255,10 @@ function init() {
     });
 
     $("#attireButton").click(function () {
-	$(this).button().hide();
-	var combo = selector.nextCombo();
-	var sugg = getAttire(combo);
-	$("#attire").html(toTitleCase(sugg));
+        $(this).button().hide();
+        var combo = selector.nextCombo();
+        var sugg = getAttire(combo);
+        $("#attire").html(toTitleCase(sugg));
     });
 
     $("#wear").html(localStorage.Clothing);
@@ -266,7 +266,7 @@ function init() {
 }
 
 function update() {
- 
+
     var url = getUrl();
 
     getWeatherData(url);
@@ -278,85 +278,85 @@ function update() {
 
 function getUrl() {
 
-	var greenwichUrl = {
-		current: "https://api.weather.gov/stations/KGFL/observations/latest",
-		forecast: "https://api.weather.gov/gridpoints/ALY/63,79/forecast",
-	};
-	var schenectadyUrl = {
-		current: "https://api.weather.gov/stations/KALB/observations/latest",
-		forecast: "https://api.weather.gov/gridpoints/ALY/53,65/forecast",
-	};
+    var greenwichUrl = {
+        current: "https://api.weather.gov/stations/KGFL/observations/latest",
+        forecast: "https://api.weather.gov/gridpoints/ALY/63,79/forecast",
+    };
+    var schenectadyUrl = {
+        current: "https://api.weather.gov/stations/KALB/observations/latest",
+        forecast: "https://api.weather.gov/gridpoints/ALY/53,65/forecast",
+    };
     var houstonUrl = {
-		current: "https://api.weather.gov/stations/KSGR/observations/latest",
-		forecast: "https://api.weather.gov/gridpoints/HGX/55,92/forecast",
-	};
+        current: "https://api.weather.gov/stations/KSGR/observations/latest",
+        forecast: "https://api.weather.gov/gridpoints/HGX/55,92/forecast",
+    };
 
     switch ($("#location").find("li.active").text()) {
     case "Greenwich":
-	return greenwichUrl;
+        return greenwichUrl;
     case "Schenectady":
-	return schenectadyUrl;
+        return schenectadyUrl;
     case "Houston":
-	return houstonUrl;
+        return houstonUrl;
     }
 }
 
 function convertTemp(units, temp) {
-	if (units == "unit:degC")
-		return temp * 9 / 5 + 32.0;
-	return temp;
+    if (units == "unit:degC")
+        return temp * 9 / 5 + 32.0;
+    return temp;
 }
-	
+
 function getWeatherData(url) {
 
     $.getJSON(url.current, function (data) {
 
-	var current = data.properties;
+        var current = data.properties;
 
-	var temperature = current.temperature.value;
-	var units = current.temperature.unitCode;
-	temperature = convertTemp(units, temperature);
-	$("#temp").attr("value", temperature).html(
-	    "Temp: " + temperature.toFixed(1) + " &deg;F");
+        var temperature = current.temperature.value;
+        var units = current.temperature.unitCode;
+        temperature = convertTemp(units, temperature);
+        $("#temp").attr("value", temperature).html(
+            "Temp: " + temperature.toFixed(1) + " &deg;F");
 
-	var feelslike = current.heatIndex.value;
-	units = current.heatIndex.unitCode;
-	if (feelslike == null) {
-		feelslike = current.windChill.value;
-		units = current.windChill.unitCode;
-		if (feelslike == null)
-			feelslike = temperature;
-		else
-			feelslike = convertTemp(units, feelslike);
-	}
-	else {
-		feelslike = convertTemp(units, feelslike);
-	}
-	$("#feels").html("Feels like " + feelslike.toFixed(0) + " &deg;F");
+        var feelslike = current.heatIndex.value;
+        units = current.heatIndex.unitCode;
+        if (feelslike == null) {
+            feelslike = current.windChill.value;
+            units = current.windChill.unitCode;
+            if (feelslike == null)
+                feelslike = temperature;
+            else
+                feelslike = convertTemp(units, feelslike);
+        }
+        else {
+            feelslike = convertTemp(units, feelslike);
+        }
+        $("#feels").html("Feels like " + feelslike.toFixed(0) + " &deg;F");
 
-	getClothing();
+        getClothing();
 
-	$.getJSON(url.forecast, function(data) {
+        $.getJSON(url.forecast, function(data) {
 
-	    var forecast = data.properties;
+            var forecast = data.properties;
 
-		var i;
-		var high, low;
-		for (i = 0; i < 2; ++i)
-			if (forecast.periods[i].isDaytime)
-				high = forecast.periods[i].temperature;
-			else
-				low = forecast.periods[i].temperature;
+            var i;
+            var high, low;
+            for (i = 0; i < 2; ++i)
+                if (forecast.periods[i].isDaytime)
+                    high = forecast.periods[i].temperature;
+            else
+                low = forecast.periods[i].temperature;
 
-	    $("#hilo").html("High: " + high.toFixed(0) + " &deg;F, " +
-			    "Low: " + low.toFixed(0) + " &deg;F");
+            $("#hilo").html("High: " + high.toFixed(0) + " &deg;F, " +
+                            "Low: " + low.toFixed(0) + " &deg;F");
 
-	    forecast = forecast.periods[0].detailedForecast;
+            forecast = forecast.periods[0].detailedForecast;
 
-	    $("#fcst").html(forecast);
-	});
+            $("#fcst").html(forecast);
+        });
 
-	$("#image").attr("src", current.icon);
+        $("#image").attr("src", current.icon);
     });
 }
 
@@ -370,77 +370,77 @@ function getClothing() {
     if (JACKET && activity == "Work") {
 
         if (temperature < -22.0)
-	    clothing = "Long sleeves, sweater, coat and hat, heavy " +
-    	    "gloves, earmuffs, scarf, boots, silk pants, and silk shirt";
+            clothing = "Long sleeves, sweater, coat and hat, heavy " +
+            "gloves, earmuffs, scarf, boots, silk pants, and silk shirt";
         else if (temperature < -13.0)
-	    clothing = "Long sleeves, sweater, coat and hat, heavy " +
-    	    "gloves, earmuffs, scarf, boots, and silk pants";
+            clothing = "Long sleeves, sweater, coat and hat, heavy " +
+            "gloves, earmuffs, scarf, boots, and silk pants";
         else if (temperature < -4.0)
-	    clothing = "Long sleeves, sweater, coat and hat, gloves, " +
-    	    "earmuffs, scarf, boots, and silk pants";
+            clothing = "Long sleeves, sweater, coat and hat, gloves, " +
+            "earmuffs, scarf, boots, and silk pants";
         else if (temperature < 5.0)
-	    clothing = "Long sleeves, sweater, coat and hat, gloves, " +
-    	    "earmuffs, scarf, and boots";
+            clothing = "Long sleeves, sweater, coat and hat, gloves, " +
+            "earmuffs, scarf, and boots";
         else if (temperature < 14.0)
-	    clothing = "Long sleeves, sweater, coat and hat, gloves, " +
-    	    "earmuffs, and scarf";
+            clothing = "Long sleeves, sweater, coat and hat, gloves, " +
+            "earmuffs, and scarf";
         else if (temperature < 23.0)
-	    clothing = "Long sleeves, sweater, coat and hat, gloves, " +
-    	    "and earmuffs";
+            clothing = "Long sleeves, sweater, coat and hat, gloves, " +
+            "and earmuffs";
         else if (temperature < 32.0)
-	    clothing = "Long sleeves, sweater, coat and hat, and gloves";
+            clothing = "Long sleeves, sweater, coat and hat, and gloves";
         else if (temperature < 41.0)
-	    clothing = "Long sleeves, sweater, coat and hat";
+            clothing = "Long sleeves, sweater, coat and hat";
         else if (temperature < 50.0)
-	    clothing = "Long sleeves and sweater";
+            clothing = "Long sleeves and sweater";
         else if (temperature < 59.0)
-	    clothing = "Long sleeves and jacket";
+            clothing = "Long sleeves and jacket";
         else if (temperature < 68.0)
-	    clothing = "Rolled sleeves and jacket";
+            clothing = "Rolled sleeves and jacket";
         else if (temperature < 77.0)
-	    clothing = "Short sleeves and jacket";
+            clothing = "Short sleeves and jacket";
         else
-	    clothing = "Short sleeves, no jacket";
+            clothing = "Short sleeves, no jacket";
     }
 
     else {
 
-	if (temperature < -22.0)
+        if (temperature < -22.0)
             clothing = "Pants, long sleeves, coat and hat, sweater, gloves, " +
-	    "earmuffs, scarf, long underwear, long undershirt, snow boots, " +
-	    "balaclava";
-	else if (temperature < -13.0)
+            "earmuffs, scarf, long underwear, long undershirt, snow boots, " +
+            "balaclava";
+        else if (temperature < -13.0)
             clothing = "Pants, long sleeves, coat and hat, sweater, gloves, " +
-	    "earmuffs, scarf, long underwear, long undershirt, snow boots";
-	else if (temperature < -4.0)
+            "earmuffs, scarf, long underwear, long undershirt, snow boots";
+        else if (temperature < -4.0)
             clothing = "Pants, long sleeves, coat and hat, sweater, gloves, " +
-	    "earmuffs, scarf, long underwear, snow boots";
-	else if (temperature < 5.0)
+            "earmuffs, scarf, long underwear, snow boots";
+        else if (temperature < 5.0)
             clothing = "Pants, long sleeves, coat and hat, sweater, gloves, " +
-	    "earmuffs, scarf, long underwear";
-	else if (temperature < 14.0)
+            "earmuffs, scarf, long underwear";
+        else if (temperature < 14.0)
             clothing = "Pants, long sleeves, coat and hat, sweater, gloves, " +
-	    "earmuffs, scarf, shoes";
-	else if (temperature < 23.0)
+            "earmuffs, scarf, shoes";
+        else if (temperature < 23.0)
             clothing = "Pants, long sleeves, coat and hat, sweater, gloves, " +
-	    "earmuffs, shoes";
-	else if (temperature < 32.0)
+            "earmuffs, shoes";
+        else if (temperature < 32.0)
             clothing = "Pants, long sleeves, coat and hat, sweater, gloves, " +
-	    "shoes";
-	else if (temperature < 41.0)
+            "shoes";
+        else if (temperature < 41.0)
             clothing = "Pants, long sleeves, jacket, sweater, shoes";
-	else if (temperature < 50.0)
+        else if (temperature < 50.0)
             clothing = "Pants, long sleeves, jacket, shoes";
-	else if (temperature < 59.0)
+        else if (temperature < 59.0)
             clothing = "Pants, long sleeves, shoes";
-	else if (temperature < 68.0)
+        else if (temperature < 68.0)
             clothing = "Pants, short sleeves, shoes";
-	else if (temperature < 77.0)
+        else if (temperature < 77.0)
             clothing = "Shorts, short sleeves, shoes";
-	else
+        else
             clothing = "Shorts, short sleeves, sandals";
     }
-    
+
     $("#wear").html(clothing);
 
     localStorage.Clothing = clothing;
@@ -452,38 +452,38 @@ function getAttire(combo) {
     var clothing = $("#wear").text();
 
     if (clothing.toLowerCase().includes("long sleeves") ||
-	clothing.toLowerCase().includes("rolled sleeves")) {
-	sugg += combo.longShirt + " shirt";
+        clothing.toLowerCase().includes("rolled sleeves")) {
+        sugg += combo.longShirt + " shirt";
     }
 
     else if (clothing.toLowerCase().includes("short sleeves")) {
-	sugg += combo.shortShirt + " shirt";
+        sugg += combo.shortShirt + " shirt";
     }
 
     if (clothing.includes("sweater")) {
-	if (sugg.length > 0)
-	    sugg += ", ";
-	sugg += combo.sweater + " sweater";
+        if (sugg.length > 0)
+            sugg += ", ";
+        sugg += combo.sweater + " sweater";
     }
 
     if (clothing.includes("jacket") ||
-	clothing.includes("sweater")) {
-	if (sugg.length > 0)
-	    sugg += ", ";
-	sugg += combo.coat + " coat";
+        clothing.includes("sweater")) {
+        if (sugg.length > 0)
+            sugg += ", ";
+        sugg += combo.coat + " coat";
     }
 
     if (sugg.length > 0)
-	sugg += ", ";
+        sugg += ", ";
 
     sugg += combo.pants + " pants";
-	
+
     return sugg;
 }
 
 function toTitleCase(str)
 {
     return str.replace(/\w\w*/g, function (txt) {
-	return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
     });
 }
