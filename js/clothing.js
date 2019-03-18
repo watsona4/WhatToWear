@@ -278,10 +278,14 @@ function update() {
 
 function getUrl() {
 
-    var greenwichUrl = "https://api.wunderground.com/api/87b98470e8c85d57/" +
-	"conditions/q/12834.json";
-    var houstonUrl = "https://api.wunderground.com/api/87b98470e8c85d57/" +
-	"conditions/q/77099.json";
+	var greenwichUrl = {
+		current: "https://api.weather.gov/stations/KGFL/observations/latest",
+		forecast: "https://api.weather.gov/gridpoints/ALY/63,79/forecast",
+	};
+    var houstonUrl = {
+		current: "https://api.weather.gov/stations/KSGR/observations/latest",
+		forecast: "https://api.weather.gov/gridpoints/HGX/55,92/forecast",
+	};
 
     switch ($("#location").find("li.active").text()) {
     case "Greenwich":
@@ -291,42 +295,59 @@ function getUrl() {
     }
 }
 
+function convertTemp(units, temp) {
+	if (units == "unit:degC")
+		return temp * 9 / 5 + 32.0;
+	return temp;
+}
+	
 function getWeatherData(url) {
 
-    $.getJSON(url, function (data) {
+    $.getJSON(url.current, function (data) {
 
-	var current = data.current_observation;
+	var current = data.properties;
 
-	var temperature = current.temp_f;
+	var temperature = current.temperature.value;
+	var units = current.temperature.unitCode;
+	temperature = convertTemp(units, temperature);
 	$("#temp").attr("value", temperature).html(
 	    "Temp: " + temperature.toFixed(1) + " &deg;F");
 
-	var feelslike = parseFloat(current.feelslike_f);
+	var feelslike = current.heatIndex.value;
+	units = current.heatIndex.unitCode;
+	if (feelslike == null) {
+		feelslike = current.windChill.value;
+		units = current.windChill.unitCode;
+		if (feelslike == null)
+			feelslike = temperature;
+		else
+			feelslike = convertTemp(units, feelslike);
+	}
+	else {
+		feelslike = convertTemp(units, feelslike);
+	}
 	$("#feels").html("Feels like " + feelslike.toFixed(0) + " &deg;F");
-
-	var fcastUrl = url.replace("conditions", "forecast");
 
 	getClothing();
 
-	$.getJSON(fcastUrl, function(data) {
+	$.getJSON(url.forecast, function(data) {
 
-	    var forecast = data.forecast;
+	    var forecast = data.properties;
 
-	    var forecastday = forecast.simpleforecast.forecastday[0];
+	    var forecastday = forecast.periods[0];
 
-	    var high = parseFloat(forecastday.high.fahrenheit);
-	    var low = parseFloat(forecastday.low.fahrenheit);
+	    var high = forecast.periods[0].temperature;
+	    var low = forecast.periods[1].temperature;
 
 	    $("#hilo").html("High: " + high.toFixed(0) + " &deg;F, " +
 			    "Low: " + low.toFixed(0) + " &deg;F");
 
-	    forecastday = forecast.txt_forecast.forecastday[0];
-	    forecast = forecastday.fcttext;
+	    forecast = forecast.periods[0].detailedForecast;
 
 	    $("#fcst").html(forecast);
 	});
 
-	$("#image").attr("src", current.icon_url);
+	$("#image").attr("src", current.icon);
     });
 }
 
