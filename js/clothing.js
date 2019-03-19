@@ -2,6 +2,9 @@ var JACKET = true;
 
 var TODAY = new Date();
 
+//var Holidays = require("date-holidays");
+//var hd = new Holidays;
+
 function ClothingSelector()
 {
     // localStorage.removeItem("Shirts");
