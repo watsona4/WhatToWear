@@ -1,7 +1,7 @@
 var JACKET = true;
 
-function ClothingSelector() {
-
+function ClothingSelector()
+{
     // localStorage.removeItem("Shirts");
     // localStorage.removeItem("ShortShirts");
     // localStorage.removeItem("LongShirts");
@@ -87,7 +87,7 @@ function ClothingSelector() {
                             charcoal: ["grey"]};
 
     this.noStorage = !lsTest();
-	
+
     if (this.noStorage || !("ShortShirts" in localStorage)) {
         this.oldShortShirts = [];
         this.shortShirt = "";
@@ -233,8 +233,6 @@ function ClothingSelector() {
             break;
         }
 
-        this.saveData();
-
         return this.getCombo();
     }
 
@@ -259,19 +257,22 @@ function ClothingSelector() {
         shortArray.push(this.shortShirt);
         longArray.push(this.longShirt);
 
-	if (!this.noStorage) {
+        if (!this.noStorage) {
             localStorage.ShortShirts = JSON.stringify(shortArray);
             localStorage.LongShirts = JSON.stringify(longArray);
             localStorage.Sweaters = this.sweater;
             localStorage.Coats = this.coat;
             localStorage.Pants = this.pants;
-	}
+        }
     }
 }
 
 var selector = new ClothingSelector();
 
-function init() {
+function init()
+{
+    $("#againButton").button().hide();
+    $("#acceptButton").button().hide();
 
     $("#location a").on("shown.bs.tab", function (event) {
         update();
@@ -295,9 +296,19 @@ function init() {
 
     $("#attireButton").click(function () {
         $(this).button().hide();
-        var combo = selector.nextCombo();
-        var sugg = getAttire(combo);
-        $("#attire").html(toTitleCase(sugg));
+        generate();
+        $("#againButton").button().show();
+        $("#acceptButton").button().show();
+    });
+
+    $("#againButton").click(function () {
+        generate();
+        $("#acceptButton").prop("disabled", false);
+    });
+
+    $("#acceptButton").click(function () {
+        selector.saveData();
+        $(this).button().prop("disabled", true);
     });
 
     if (lsTest())
@@ -305,8 +316,15 @@ function init() {
     update();
 }
 
-function update() {
+function generate()
+{
+    var combo = selector.nextCombo();
+    var sugg = getAttire(combo);
+    $("#attire").html(toTitleCase(sugg));
+}
 
+function update()
+{
     var url = getUrl();
 
     getWeatherData(url);
@@ -316,8 +334,8 @@ function update() {
     $("#attire").html(toTitleCase(sugg));
 }
 
-function getUrl() {
-
+function getUrl()
+{
     var greenwichUrl = {
         current: "https://api.weather.gov/stations/KGFL/observations/latest",
         forecast: "https://api.weather.gov/gridpoints/ALY/63,79/forecast",
@@ -341,14 +359,15 @@ function getUrl() {
     }
 }
 
-function convertTemp(units, temp) {
+function convertTemp(units, temp)
+{
     if (units == "unit:degC")
         return temp * 9 / 5 + 32.0;
     return temp;
 }
 
-function getWeatherData(url) {
-
+function getWeatherData(url)
+{
     $.getJSON(url.current, function (data) {
 
         var current = data.properties;
@@ -400,8 +419,8 @@ function getWeatherData(url) {
     });
 }
 
-function getClothing() {
-
+function getClothing()
+{
     var temperature = parseFloat($("#temp").attr("value"));
     var clothing;
 
@@ -487,8 +506,8 @@ function getClothing() {
 	localStorage.Clothing = clothing;
 }
 
-function getAttire(combo) {
-
+function getAttire(combo)
+{
     var sugg = "";
     var clothing = $("#wear").text();
 
