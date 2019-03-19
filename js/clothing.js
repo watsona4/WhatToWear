@@ -241,22 +241,18 @@ function ClothingSelector() {
         var shortArray = [];
 
         var shortShirtNum = Math.min(this.shortShirts.length - 1, 4);
-        if (this.oldShortShirts.length < shortShirtNum) {
+        if (this.oldShortShirts.length < shortShirtNum)
             shortArray = this.oldShortShirts.slice();
-        }
-        else {
+        else
             shortArray = this.oldShortShirts.slice(1, shortShirtNum);
-        }
 
         var longArray = [];
 
         var longShirtNum = Math.min(this.longShirts.length - 1, 4);
-        if (this.oldLongShirts.length < longShirtNum) {
+        if (this.oldLongShirts.length < longShirtNum)
             longArray = this.oldLongShirts.slice();
-        }
-        else {
+        else
             longArray = this.oldLongShirts.slice(1, longShirtNum);
-        }
 
         shortArray.push(this.shortShirt);
         longArray.push(this.longShirt);
