@@ -139,57 +139,96 @@ function ClothingSelector() {
                 pants: this.pants};
     };
 
-    this.nextCombo = function() {
+    this.nextShortShirt = function() {
 
-        var valid = false;
-
-        while (!valid) {
+        var counts = makeArray(this.shortShirts.length);
+        while (true) {
             var idx = Math.floor(Math.random() * this.shortShirts.length);
+            counts[idx]++;
             this.shortShirt = this.shortShirts[idx];
             if (!this.oldShortShirts.includes(this.shortShirt))
-                valid = true;
+                return true;
+            if (all(counts))
+                return false;
         }
+    };
 
-        valid = false;
+    this.nextLongShirt = function() {
 
-        while (!valid) {
+        var counts = makeArray(this.longShirts.length);
+        while (true) {
             var idx = Math.floor(Math.random() * this.longShirts.length);
+            counts[idx]++;
             this.longShirt = this.longShirts[idx];
             if (!this.oldLongShirts.includes(this.longShirt))
-                valid = true;
+                return true;
+            if (all(counts))
+                return false;
         }
+    };
 
-        valid = false;
+    this.nextSweater = function() {
 
-        while (!valid) {
+        var counts = makeArray(this.sweaters.length);
+        while (true) {
             var idx = Math.floor(Math.random() * this.sweaters.length);
+            counts[idx]++;
             this.sweater = this.sweaters[idx];
             if (this.sweater != this.oldSweaters &&
                 (!(this.shirt in this.shirtData) ||
                  !this.shirtData[this.shirt].includes(this.sweater)))
-                valid = true;
+                return true;
+            if (all(counts))
+                return false;
         }
+    };
 
-        valid = false;
+    this.nextCoat = function() {
 
-        while (!valid) {
+        var counts = makeArray(this.coats.length);
+        while (true) {
             var idx = Math.floor(Math.random() * this.coats.length);
+            counts[idx]++;
             this.coat = this.coats[idx];
             if (this.coat != this.oldCoats)
-                valid = true;
+                return true;
+            if (all(counts))
+                return false;
         }
+    };
 
-        valid = false;
+    this.nextPants = function() {
 
-        while (!valid) {
+        var counts = makeArray(this.pantss.length);
+        while (true) {
             var idx = Math.floor(Math.random() * this.pantss.length);
+            counts[idx]++;
             this.pants = this.pantss[idx];
             if (this.coatData[this.coat].includes(this.pants) &&
                 (!(this.sweater in this.sweaterData) ||
                  !this.sweaterData[this.sweater].includes(this.pants)) &&
                 (!(this.sweater in this.sweaterCoatData) ||
                  !this.sweaterCoatData[this.sweater].includes(this.coat)))
-                valid = true;
+                return true;
+            if (all(counts))
+                return false;
+        }
+    };
+
+    this.nextCombo = function() {
+
+        while (true) {
+            if (!this.nextShortShirt())
+                continue;
+            if (!this.nextLongShirt())
+                continue;
+            if (!this.nextSweater())
+                continue;
+            if (!this.nextCoat())
+                continue;
+            if (!this.nextPants())
+                continue;
+            break;
         }
 
         this.saveData();
@@ -486,4 +525,21 @@ function toTitleCase(str)
     return str.replace(/\w\w*/g, function (txt) {
         return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
     });
+}
+
+function makeArray(size)
+{
+    var i;
+    var array = [];
+    for (i = 0; i < size; ++i)
+	array.push(0);
+    return array;
+}
+
+function all(array)
+{
+    for (i in array)
+	if (array[i] == 0)
+	    return false;
+    return true;
 }
