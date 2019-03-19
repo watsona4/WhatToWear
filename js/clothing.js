@@ -86,7 +86,9 @@ function ClothingSelector() {
                             khaki: ["tan"],
                             charcoal: ["grey"]};
 
-    if (!("ShortShirts" in localStorage)) {
+    this.noStorage = !lsTest();
+	
+    if (this.noStorage || !("ShortShirts" in localStorage)) {
         this.oldShortShirts = [];
         this.shortShirt = "";
     }
@@ -95,7 +97,7 @@ function ClothingSelector() {
         this.shortShirt = this.oldShortShirts[this.oldShortShirts.length - 1];
     }
 
-    if (!("LongShirts" in localStorage)) {
+    if (this.noStorage || !("LongShirts" in localStorage)) {
         this.oldLongShirts = [];
         this.longShirt = "";
     }
@@ -104,7 +106,7 @@ function ClothingSelector() {
         this.longShirt = this.oldLongShirts[this.oldLongShirts.length - 1];
     }
 
-    if (!("Sweaters" in localStorage)) {
+    if (this.noStorage || !("Sweaters" in localStorage)) {
         this.oldSweaters = "";
         this.sweater = "";
     }
@@ -113,7 +115,7 @@ function ClothingSelector() {
         this.sweater = this.oldSweaters;
     }
 
-    if (!("Coats" in localStorage)) {
+    if (this.noStorage || !("Coats" in localStorage)) {
         this.oldCoats = "";
         this.coat = "";
     }
@@ -122,7 +124,7 @@ function ClothingSelector() {
         this.coat = this.oldCoats;
     }
 
-    if (!("Pants" in localStorage)) {
+    if (this.noStorage || !("Pants" in localStorage)) {
         this.oldPants = "";
         this.pants = "";
     }
@@ -257,11 +259,13 @@ function ClothingSelector() {
         shortArray.push(this.shortShirt);
         longArray.push(this.longShirt);
 
-        localStorage.ShortShirts = JSON.stringify(shortArray);
-        localStorage.LongShirts = JSON.stringify(longArray);
-        localStorage.Sweaters = this.sweater;
-        localStorage.Coats = this.coat;
-        localStorage.Pants = this.pants;
+	if (!this.noStorage) {
+            localStorage.ShortShirts = JSON.stringify(shortArray);
+            localStorage.LongShirts = JSON.stringify(longArray);
+            localStorage.Sweaters = this.sweater;
+            localStorage.Coats = this.coat;
+            localStorage.Pants = this.pants;
+	}
     }
 }
 
@@ -296,7 +300,8 @@ function init() {
         $("#attire").html(toTitleCase(sugg));
     });
 
-    $("#wear").html(localStorage.Clothing);
+    if (lsTest())
+	$("#wear").html(localStorage.Clothing);
     update();
 }
 
@@ -478,7 +483,8 @@ function getClothing() {
 
     $("#wear").html(clothing);
 
-    localStorage.Clothing = clothing;
+    if (lsTest())
+	localStorage.Clothing = clothing;
 }
 
 function getAttire(combo) {
@@ -538,4 +544,16 @@ function all(array)
 	if (array[i] == 0)
 	    return false;
     return true;
+}
+
+function lsTest()
+{
+    var test = "test";
+    try {
+	localStorage.setItem(test, test);
+	localStorage.remove(test);
+	return true;
+    } catch(e) {
+	return false;
+    }
 }
