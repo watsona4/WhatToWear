@@ -1,5 +1,7 @@
 var JACKET = true;
 
+var TODAY = new Date();
+
 function ClothingSelector()
 {
     // localStorage.removeItem("Shirts");
@@ -37,6 +39,9 @@ function ClothingSelector()
                    "navy",
                    "brown",
                    "grey"];
+
+    this.summerPants = [];
+    this.summerCoats = ["tan"];
 
     // Key is coat, value is list of pants that go with coat.
     this.coatData = {navy: ["grey",
@@ -273,6 +278,18 @@ function init()
 {
     $("#againButton").button().hide();
     $("#acceptButton").button().hide();
+
+    // Remove coats/pants if it isn't summer
+    var memorialDay = new Date();
+    var laborDay = new Date();
+    if (TODAY < memorialDay || TODAY >= laborDay) {
+	selector.coats = selector.coats.filter(function(val, idx, arr) {
+	    return !selector.summerCoats.includes(val);
+	});
+	selector.pantss = selector.pantss.filter(function(val, idx, arr) {
+	    return !selector.summerPants.includes(val);
+	});
+    }
 
     $("#location a").on("shown.bs.tab", function (event) {
         update();
