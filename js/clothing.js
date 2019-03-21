@@ -372,7 +372,7 @@ function getUrl()
         forecast: "https://api.weather.gov/gridpoints/HGX/55,92/forecast",
     };
 
-    switch ($("#location").find("li.active").text()) {
+    switch ($("#location").find("a.active").text()) {
     case "Greenwich":
         return greenwichUrl;
     case "Schenectady":
@@ -447,7 +447,7 @@ function getClothing()
     var temperature = parseFloat($("#temp").attr("value"));
     var clothing;
 
-    var activity = $("#activity").find("li.active").text();
+    var activity = $("#activity").find("a.active").text();
 
     if (JACKET && activity == "Work") {
 
