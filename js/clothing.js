@@ -331,6 +331,13 @@ $("#acceptButton").click(function () {
     $(this).button().prop("disabled", true);
 });
 
+$("#jacketButton").click(function () {
+    if ($("#jacket").checked)
+	$(this).find("label").prop("active", false);
+    else
+	$(this).find("label").prop("active", true);
+});
+
 if (HAVE_LS)
     $("#wear").html(localStorage.Clothing);
 
@@ -445,7 +452,7 @@ function getClothing()
     var clothing;
 
     var activity = $("#activity").find("a.active").text();
-    var jacket = $("#jacket").checked();
+    var jacket = $("#jacket").checked;
 
     if (jacket && activity == "Work") {
 
