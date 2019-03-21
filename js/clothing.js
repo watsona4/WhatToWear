@@ -307,6 +307,8 @@ $("#activity a").on("shown.bs.tab", function (event) {
     if ($("#attireButton").button().is(":hidden")) {
         $("#attire").html("");
         $("#attireButton").button().show();
+	$("#againButton").button().hide();
+	$("#acceptButton").button().hide();
     }
 });
 
@@ -422,27 +424,27 @@ function getWeatherData(url)
 
         getClothing();
 
-        $.getJSON(url.forecast, function(data) {
-
-            var forecast = data.properties;
-
-            var i;
-            var high, low;
-            for (i = 0; i < 2; ++i)
-                if (forecast.periods[i].isDaytime)
-                    high = forecast.periods[i].temperature;
-            else
-                low = forecast.periods[i].temperature;
-
-            $("#hilo").html("High: " + high.toFixed(0) + " &deg;F, " +
-                            "Low: " + low.toFixed(0) + " &deg;F");
-
-            forecast = forecast.periods[0].detailedForecast;
-
-            $("#fcst").html(forecast);
-        });
-
         $("#image").attr("src", current.icon);
+    });
+
+    $.getJSON(url.forecast, function (data) {
+
+        var forecast = data.properties;
+
+        var i;
+        var high, low;
+        for (i = 0; i < 2; ++i)
+            if (forecast.periods[i].isDaytime)
+                high = forecast.periods[i].temperature;
+        else
+            low = forecast.periods[i].temperature;
+
+        $("#hilo").html("High: " + high.toFixed(0) + " &deg;F, " +
+                        "Low: " + low.toFixed(0) + " &deg;F");
+
+        forecast = forecast.periods[0].detailedForecast;
+
+        $("#fcst").html(forecast);
     });
 }
 
