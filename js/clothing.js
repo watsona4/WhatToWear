@@ -1,4 +1,5 @@
 var TODAY = new Date();
+var HAVE_LS = lsTest();
 
 var Holidays = require("date-holidays");
 var hd = new Holidays('US');
@@ -92,9 +93,7 @@ function ClothingSelector()
                             khaki: ["tan"],
                             charcoal: ["grey"]};
 
-    this.noStorage = !lsTest();
-
-    if (this.noStorage || !("ShortShirts" in localStorage)) {
+    if (!HAVE_LS || !("ShortShirts" in localStorage)) {
         this.oldShortShirts = [];
         this.shortShirt = "";
     }
@@ -103,7 +102,7 @@ function ClothingSelector()
         this.shortShirt = this.oldShortShirts[this.oldShortShirts.length - 1];
     }
 
-    if (this.noStorage || !("LongShirts" in localStorage)) {
+    if (!HAVE_LS || !("LongShirts" in localStorage)) {
         this.oldLongShirts = [];
         this.longShirt = "";
     }
@@ -112,7 +111,7 @@ function ClothingSelector()
         this.longShirt = this.oldLongShirts[this.oldLongShirts.length - 1];
     }
 
-    if (this.noStorage || !("Sweaters" in localStorage)) {
+    if (!HAVE_LS || !("Sweaters" in localStorage)) {
         this.oldSweaters = "";
         this.sweater = "";
     }
@@ -121,7 +120,7 @@ function ClothingSelector()
         this.sweater = this.oldSweaters;
     }
 
-    if (this.noStorage || !("Coats" in localStorage)) {
+    if (!HAVE_LS || !("Coats" in localStorage)) {
         this.oldCoats = "";
         this.coat = "";
     }
@@ -130,7 +129,7 @@ function ClothingSelector()
         this.coat = this.oldCoats;
     }
 
-    if (this.noStorage || !("Pants" in localStorage)) {
+    if (!HAVE_LS || !("Pants" in localStorage)) {
         this.oldPants = "";
         this.pants = "";
     }
@@ -263,7 +262,7 @@ function ClothingSelector()
         shortArray.push(this.shortShirt);
         longArray.push(this.longShirt);
 
-        if (!this.noStorage) {
+        if (HAVE_LS) {
             localStorage.ShortShirts = JSON.stringify(shortArray);
             localStorage.LongShirts = JSON.stringify(longArray);
             localStorage.Sweaters = this.sweater;
@@ -332,7 +331,7 @@ $("#acceptButton").click(function () {
     $(this).button().prop("disabled", true);
 });
 
-if (lsTest())
+if (HAVE_LS)
     $("#wear").html(localStorage.Clothing);
 
 update();
@@ -524,7 +523,7 @@ function getClothing()
 
     $("#wear").html(clothing);
 
-    if (lsTest())
+    if (HAVE_LS)
 	localStorage.Clothing = clothing;
 }
 
