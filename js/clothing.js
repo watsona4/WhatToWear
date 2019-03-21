@@ -1,5 +1,3 @@
-var JACKET = true;
-
 var TODAY = new Date();
 
 var Holidays = require("date-holidays");
@@ -448,8 +446,9 @@ function getClothing()
     var clothing;
 
     var activity = $("#activity").find("a.active").text();
+    var jacket = $("#jacket").checked();
 
-    if (JACKET && activity == "Work") {
+    if (jacket && activity == "Work") {
 
         if (temperature < -22.0)
             clothing = "Long sleeves, sweater, coat and hat, heavy " +
