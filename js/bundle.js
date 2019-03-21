@@ -40,7 +40,7 @@ function ClothingSelector()
                   "tan"];
 
     this.pantss = ["khaki",
-                   "navy",
+                   // "navy",
                    "brown",
                    "grey"];
 
