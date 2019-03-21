@@ -2,8 +2,8 @@ var JACKET = true;
 
 var TODAY = new Date();
 
-//var Holidays = require("date-holidays");
-//var hd = new Holidays;
+var Holidays = require("date-holidays");
+var hd = new Holidays('US');
 
 function ClothingSelector()
 {
@@ -281,8 +281,13 @@ $("#againButton").button().hide();
 $("#acceptButton").button().hide();
 
 // Remove coats/pants if it isn't summer
-var memorialDay = new Date();
-var laborDay = new Date();
+var holidays = hd.getHolidays(TODAY.getFullYear());
+var memorialDay = holidays.filter(function(val, idx, arr) {
+    return val.name == 'Memorial Day';
+})[0].start;
+var laborDay = holidays.filter(function(val, idx, arr) {
+    return val.name == 'Labor Day';
+})[0].end;
 if (TODAY < memorialDay || TODAY >= laborDay) {
     selector.coats = selector.coats.filter(function(val, idx, arr) {
 	return !selector.summerCoats.includes(val);
