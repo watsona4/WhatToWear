@@ -277,64 +277,62 @@ function ClothingSelector()
 
 var selector = new ClothingSelector();
 
-function init()
-{
-    $("#againButton").button().hide();
-    $("#acceptButton").button().hide();
+$("#againButton").button().hide();
+$("#acceptButton").button().hide();
 
-    // Remove coats/pants if it isn't summer
-    var memorialDay = new Date();
-    var laborDay = new Date();
-    if (TODAY < memorialDay || TODAY >= laborDay) {
-	selector.coats = selector.coats.filter(function(val, idx, arr) {
-	    return !selector.summerCoats.includes(val);
-	});
-	selector.pantss = selector.pantss.filter(function(val, idx, arr) {
-	    return !selector.summerPants.includes(val);
-	});
-    }
-
-    $("#location a").on("shown.bs.tab", function (event) {
-        update();
+// Remove coats/pants if it isn't summer
+var memorialDay = new Date();
+var laborDay = new Date();
+if (TODAY < memorialDay || TODAY >= laborDay) {
+    selector.coats = selector.coats.filter(function(val, idx, arr) {
+	return !selector.summerCoats.includes(val);
     });
-
-    $("#location a").click(function () {
-        $(this).tab("show");
+    selector.pantss = selector.pantss.filter(function(val, idx, arr) {
+	return !selector.summerPants.includes(val);
     });
-
-    $("#activity a").on("shown.bs.tab", function (event) {
-        getClothing();
-        if ($("#attireButton").button().is(":hidden")) {
-            $("#attire").html("");
-            $("#attireButton").button().show();
-        }
-    });
-
-    $("#activity a").click(function () {
-        $(this).tab("show");
-    });
-
-    $("#attireButton").click(function () {
-        $(this).button().hide();
-        generate();
-        $("#againButton").button().show();
-        $("#acceptButton").button().show();
-    });
-
-    $("#againButton").click(function () {
-        generate();
-        $("#acceptButton").prop("disabled", false);
-    });
-
-    $("#acceptButton").click(function () {
-        selector.saveData();
-        $(this).button().prop("disabled", true);
-    });
-
-    if (lsTest())
-	$("#wear").html(localStorage.Clothing);
-    update();
 }
+
+$("#location a").on("shown.bs.tab", function (event) {
+    update();
+});
+
+$("#location a").click(function () {
+    $(this).tab("show");
+});
+
+$("#activity a").on("shown.bs.tab", function (event) {
+    getClothing();
+    if ($("#attireButton").button().is(":hidden")) {
+        $("#attire").html("");
+        $("#attireButton").button().show();
+    }
+});
+
+$("#activity a").click(function () {
+    $(this).tab("show");
+});
+
+$("#attireButton").click(function () {
+    $(this).button().hide();
+    generate();
+    $("#againButton").button().show();
+    $("#acceptButton").button().show();
+});
+
+$("#againButton").click(function () {
+    generate();
+    $("#acceptButton").prop("disabled", false);
+});
+
+$("#acceptButton").click(function () {
+    selector.saveData();
+    $(this).button().prop("disabled", true);
+});
+
+if (lsTest())
+    $("#wear").html(localStorage.Clothing);
+
+update();
 
 function generate()
 {
