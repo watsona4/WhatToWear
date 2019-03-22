@@ -333,11 +333,12 @@ $("#acceptButton").click(function () {
     $(this).button().prop("disabled", true);
 });
 
-$("#jacketButton").click(function () {
-    if ($("#jacket").checked)
-	$(this).find("label").prop("active", false);
+$("#jacket").click(function () {
+    if ($(this).disabled)
+	$(this).prop("disabled", false);
     else
-	$(this).find("label").prop("active", true);
+	$(this).prop("disabled", true);
+    getClothing();
 });
 
 if (HAVE_LS)
@@ -420,12 +421,13 @@ function getWeatherData(url)
         else {
             feelslike = convertTemp(units, feelslike);
         }
+
         $("#feels").html("Feels like " + feelslike.toFixed(0) + " &deg;F");
 
-        getClothing();
-
         $("#image").attr("src", current.icon);
-    });
+
+	getClothing();
+     });
 
     $.getJSON(url.forecast, function (data) {
 
@@ -454,7 +456,7 @@ function getClothing()
     var clothing;
 
     var activity = $("#activity").find("a.active").text();
-    var jacket = $("#jacket").checked;
+    var jacket = !$("#jacket").disabled;
 
     if (jacket && activity == "Work") {
 
