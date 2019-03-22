@@ -602,7 +602,7 @@ function lsTest()
     var test = "test";
     try {
 	localStorage.setItem(test, test);
-	localStorage.remove(test);
+	localStorage.removeItem(test);
 	return true;
     } catch(e) {
 	return false;
