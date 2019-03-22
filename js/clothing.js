@@ -274,9 +274,6 @@ function ClothingSelector()
 
 var selector = new ClothingSelector();
 
-$("#againButton").button().hide();
-$("#acceptButton").button().hide();
-
 // Remove coats/pants if it isn't summer
 var holidays = hd.getHolidays(TODAY.getFullYear());
 var memorialDay = holidays.filter(function(val, idx, arr) {
@@ -334,10 +331,13 @@ $("#acceptButton").click(function () {
 });
 
 $("#jacket").click(function () {
-    if ($(this).disabled)
-        $(this).prop("disabled", false);
-    else
-        $(this).prop("disabled", true);
+    if ($(this)[0].classList.contains("btn-secondary")) {
+        $(this)[0].classList.add("btn-outline-secondary");
+        $(this)[0].classList.remove("btn-secondary");
+    } else {
+        $(this)[0].classList.add("btn-secondary");
+        $(this)[0].classList.remove("btn-outline-secondary");
+    }
     getClothing();
 });
 
@@ -456,7 +456,7 @@ function getClothing()
     var clothing;
 
     var activity = $("#activity").find("a.active").text();
-    var jacket = !$("#jacket").disabled;
+    var jacket = $("#jacket")[0].classList.contains("btn-secondary");
 
     if (jacket && activity == "Work") {
 
