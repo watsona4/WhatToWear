@@ -287,10 +287,10 @@ var laborDay = holidays.filter(function(val, idx, arr) {
 })[0].end;
 if (TODAY < memorialDay || TODAY >= laborDay) {
     selector.coats = selector.coats.filter(function(val, idx, arr) {
-	return !selector.summerCoats.includes(val);
+        return !selector.summerCoats.includes(val);
     });
     selector.pantss = selector.pantss.filter(function(val, idx, arr) {
-	return !selector.summerPants.includes(val);
+        return !selector.summerPants.includes(val);
     });
 }
 
@@ -307,8 +307,8 @@ $("#activity a").on("shown.bs.tab", function (event) {
     if ($("#attireButton").button().is(":hidden")) {
         $("#attire").html("");
         $("#attireButton").button().show();
-	$("#againButton").button().hide();
-	$("#acceptButton").button().hide();
+        $("#againButton").button().hide();
+        $("#acceptButton").button().hide();
     }
 });
 
@@ -335,9 +335,9 @@ $("#acceptButton").click(function () {
 
 $("#jacket").click(function () {
     if ($(this).disabled)
-	$(this).prop("disabled", false);
+        $(this).prop("disabled", false);
     else
-	$(this).prop("disabled", true);
+        $(this).prop("disabled", true);
     getClothing();
 });
 
@@ -426,7 +426,7 @@ function getWeatherData(url)
 
         $("#image").attr("src", current.icon);
 
-	getClothing();
+        getClothing();
      });
 
     $.getJSON(url.forecast, function (data) {
@@ -535,7 +535,7 @@ function getClothing()
     $("#wear").html(clothing);
 
     if (HAVE_LS)
-	localStorage.Clothing = clothing;
+        localStorage.Clothing = clothing;
 }
 
 function getAttire(combo)
@@ -585,15 +585,15 @@ function makeArray(size)
     var i;
     var array = [];
     for (i = 0; i < size; ++i)
-	array.push(0);
+        array.push(0);
     return array;
 }
 
 function all(array)
 {
     for (i in array)
-	if (array[i] == 0)
-	    return false;
+        if (array[i] == 0)
+            return false;
     return true;
 }
 
@@ -601,10 +601,10 @@ function lsTest()
 {
     var test = "test";
     try {
-	localStorage.setItem(test, test);
-	localStorage.removeItem(test);
-	return true;
+        localStorage.setItem(test, test);
+        localStorage.removeItem(test);
+        return true;
     } catch(e) {
-	return false;
+        return false;
     }
 }
