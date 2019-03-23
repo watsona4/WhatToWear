@@ -1,5 +1,5 @@
-var TODAY = new Date();
-var HAVE_LS = lsTest();
+const TODAY = new Date();
+const HAVE_LS = lsTest();
 
 var Holidays = require("date-holidays");
 var hd = new Holidays('US');
@@ -279,19 +279,15 @@ $("#acceptButton").button().hide();
 
 // Remove coats/pants if it isn't summer
 var holidays = hd.getHolidays(TODAY.getFullYear());
-var memorialDay = holidays.filter(function(val, idx, arr) {
-    return val.name == 'Memorial Day';
-})[0].start;
-var laborDay = holidays.filter(function(val, idx, arr) {
-    return val.name == 'Labor Day';
-})[0].end;
+var memorialDay = holidays.filter(
+    (val, idx, arr) => val.name == 'Memorial Day')[0].start;
+var laborDay = holidays.filter(
+    (val, idx, arr) => val.name == 'Labor Day')[0].end;
 if (TODAY < memorialDay || TODAY >= laborDay) {
-    selector.coats = selector.coats.filter(function(val, idx, arr) {
-        return !selector.summerCoats.includes(val);
-    });
-    selector.pantss = selector.pantss.filter(function(val, idx, arr) {
-        return !selector.summerPants.includes(val);
-    });
+    selector.coats = selector.coats.filter(
+	(val, idx, arr) => !selector.summerCoats.includes(val));
+    selector.pantss = selector.pantss.filter(
+	(val, idx, arr) => !selector.summerPants.includes(val));
 }
 
 $("#location a").on("shown.bs.tab", function (event) {
@@ -584,9 +580,8 @@ function getAttire(combo)
 
 function toTitleCase(str)
 {
-    return str.replace(/\w\w*/g, function (txt) {
-        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-    });
+    return str.replace(/\w\w*/g, (txt) =>
+		       txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 }
 
 function makeArray(size)
