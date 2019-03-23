@@ -1,4 +1,3 @@
-const TODAY = new Date();
 const HAVE_LS = lsTest();
 
 var Holidays = require("date-holidays");
@@ -277,18 +276,7 @@ var selector = new ClothingSelector();
 $("#againButton").button().hide();
 $("#acceptButton").button().hide();
 
-// Remove coats/pants if it isn't summer
-var holidays = hd.getHolidays(TODAY.getFullYear());
-var memorialDay = holidays.filter(
-    (val, idx, arr) => val.name == 'Memorial Day')[0].start;
-var laborDay = holidays.filter(
-    (val, idx, arr) => val.name == 'Labor Day')[0].end;
-if (TODAY < memorialDay || TODAY >= laborDay) {
-    selector.coats = selector.coats.filter(
-	(val, idx, arr) => !selector.summerCoats.includes(val));
-    selector.pantss = selector.pantss.filter(
-	(val, idx, arr) => !selector.summerPants.includes(val));
-}
+filterSummer(selector);
 
 $("#location a").on("shown.bs.tab", function (event) {
     update();
@@ -610,6 +598,24 @@ function lsTest()
         return true;
     } catch (e) {
         return false;
+    }
+}
+
+function filterSummer(selector)
+{
+    let today = new Date();
+    let holidays = hd.getHolidays(today.getFullYear());
+
+    let memorialDay = holidays.filter(
+	(val, idx, arr) => val.name == 'Memorial Day')[0].start;
+    let laborDay = holidays.filter(
+	(val, idx, arr) => val.name == 'Labor Day')[0].end;
+
+    if (today < memorialDay || today >= laborDay) {
+	selector.coats = selector.coats.filter(
+	    (val, idx, arr) => !selector.summerCoats.includes(val));
+	selector.pantss = selector.pantss.filter(
+	    (val, idx, arr) => !selector.summerPants.includes(val));
     }
 }
 
