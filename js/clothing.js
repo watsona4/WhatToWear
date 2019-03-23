@@ -147,9 +147,9 @@ function ClothingSelector()
 
     this.nextShortShirt = function() {
 
-        var counts = makeArray(this.shortShirts.length);
+        let counts = makeArray(this.shortShirts.length);
         while (true) {
-            var idx = Math.floor(Math.random() * this.shortShirts.length);
+            let idx = Math.floor(Math.random() * this.shortShirts.length);
             counts[idx]++;
             this.shortShirt = this.shortShirts[idx];
             if (!this.oldShortShirts.includes(this.shortShirt))
@@ -161,9 +161,9 @@ function ClothingSelector()
 
     this.nextLongShirt = function() {
 
-        var counts = makeArray(this.longShirts.length);
+        let counts = makeArray(this.longShirts.length);
         while (true) {
-            var idx = Math.floor(Math.random() * this.longShirts.length);
+            let idx = Math.floor(Math.random() * this.longShirts.length);
             counts[idx]++;
             this.longShirt = this.longShirts[idx];
             if (!this.oldLongShirts.includes(this.longShirt))
@@ -175,9 +175,9 @@ function ClothingSelector()
 
     this.nextSweater = function() {
 
-        var counts = makeArray(this.sweaters.length);
+        let counts = makeArray(this.sweaters.length);
         while (true) {
-            var idx = Math.floor(Math.random() * this.sweaters.length);
+            let idx = Math.floor(Math.random() * this.sweaters.length);
             counts[idx]++;
             this.sweater = this.sweaters[idx];
             if (this.sweater != this.oldSweaters &&
@@ -191,9 +191,9 @@ function ClothingSelector()
 
     this.nextCoat = function() {
 
-        var counts = makeArray(this.coats.length);
+        let counts = makeArray(this.coats.length);
         while (true) {
-            var idx = Math.floor(Math.random() * this.coats.length);
+            let idx = Math.floor(Math.random() * this.coats.length);
             counts[idx]++;
             this.coat = this.coats[idx];
             if (this.coat != this.oldCoats)
@@ -205,9 +205,9 @@ function ClothingSelector()
 
     this.nextPants = function() {
 
-        var counts = makeArray(this.pantss.length);
+        let counts = makeArray(this.pantss.length);
         while (true) {
-            var idx = Math.floor(Math.random() * this.pantss.length);
+            let idx = Math.floor(Math.random() * this.pantss.length);
             counts[idx]++;
             this.pants = this.pantss[idx];
             if (this.coatData[this.coat].includes(this.pants) &&
@@ -242,17 +242,17 @@ function ClothingSelector()
 
     this.saveData = function () {
 
-        var shortArray = [];
+        let shortArray = [];
 
-        var shortShirtNum = Math.min(this.shortShirts.length - 1, 4);
+        let shortShirtNum = Math.min(this.shortShirts.length - 1, 4);
         if (this.oldShortShirts.length < shortShirtNum)
             shortArray = this.oldShortShirts.slice();
         else
             shortArray = this.oldShortShirts.slice(1, shortShirtNum);
 
-        var longArray = [];
+        let longArray = [];
 
-        var longShirtNum = Math.min(this.longShirts.length - 1, 4);
+        let longShirtNum = Math.min(this.longShirts.length - 1, 4);
         if (this.oldLongShirts.length < longShirtNum)
             longArray = this.oldLongShirts.slice();
         else
@@ -292,8 +292,8 @@ $("#activity a").on("shown.bs.tab", function (event) {
     else
         $("#jacket").button().prop("disabled", false);
     getClothing();
-    var combo = selector.getCombo();
-    var sugg = getAttire(combo);
+    let combo = selector.getCombo();
+    let sugg = getAttire(combo);
     $("#attire").html(toTitleCase(sugg));
     if ($("#attireButton").button().is(":hidden")) {
         $("#attire").html("");
@@ -327,8 +327,8 @@ $("#acceptButton").click(function () {
 $("#jacket").click(function () {
     $(this).button().toggleClass("btn-default btn-secondary");
     getClothing();
-    var combo = selector.getCombo();
-    var sugg = getAttire(combo);
+    let combo = selector.getCombo();
+    let sugg = getAttire(combo);
     $("#attire").html(toTitleCase(sugg));
 });
 
@@ -339,33 +339,33 @@ update();
 
 function generate()
 {
-    var combo = selector.nextCombo();
-    var sugg = getAttire(combo);
+    let combo = selector.nextCombo();
+    let sugg = getAttire(combo);
     $("#attire").html(toTitleCase(sugg));
 }
 
 function update()
 {
-    var url = getUrl();
+    let url = getUrl();
 
     getWeatherData(url);
 
-    var combo = selector.getCombo();
-    var sugg = getAttire(combo);
+    let combo = selector.getCombo();
+    let sugg = getAttire(combo);
     $("#attire").html(toTitleCase(sugg));
 }
 
 function getUrl()
 {
-    var greenwichUrl = {
+    let greenwichUrl = {
         current: "https://api.weather.gov/stations/KGFL/observations/latest",
         forecast: "https://api.weather.gov/gridpoints/ALY/63,79/forecast",
     };
-    var schenectadyUrl = {
+    let schenectadyUrl = {
         current: "https://api.weather.gov/stations/KALB/observations/latest",
         forecast: "https://api.weather.gov/gridpoints/ALY/53,65/forecast",
     };
-    var houstonUrl = {
+    let houstonUrl = {
         current: "https://api.weather.gov/stations/KSGR/observations/latest",
         forecast: "https://api.weather.gov/gridpoints/HGX/55,92/forecast",
     };
@@ -391,15 +391,15 @@ function getWeatherData(url)
 {
     $.getJSON(url.current, function (data) {
 
-        var current = data.properties;
+        let current = data.properties;
 
-        var temperature = current.temperature.value;
-        var units = current.temperature.unitCode;
+        let temperature = current.temperature.value;
+        let units = current.temperature.unitCode;
         temperature = convertTemp(units, temperature);
         $("#temp").attr("value", temperature).html(
             "Temp: " + temperature.toFixed(1) + " &deg;F");
 
-        var feelslike = current.heatIndex.value;
+        let feelslike = current.heatIndex.value;
         units = current.heatIndex.unitCode;
         if (feelslike == null) {
             feelslike = current.windChill.value;
@@ -422,15 +422,15 @@ function getWeatherData(url)
 
     $.getJSON(url.forecast, function (data) {
 
-        var forecast = data.properties;
+        let forecast = data.properties;
 
-        var i;
-        var high, low;
-        for (i = 0; i < 2; ++i)
+        let high, low;
+        for (let i = 0; i < 2; ++i) {
             if (forecast.periods[i].isDaytime)
                 high = forecast.periods[i].temperature;
-        else
-            low = forecast.periods[i].temperature;
+            else
+                low = forecast.periods[i].temperature;
+	}
 
         $("#hilo").html("High: " + high.toFixed(0) + " &deg;F, " +
                         "Low: " + low.toFixed(0) + " &deg;F");
@@ -443,11 +443,11 @@ function getWeatherData(url)
 
 function getClothing()
 {
-    var temperature = parseFloat($("#temp").attr("value"));
-    var clothing;
+    let temperature = parseFloat($("#temp").attr("value"));
+    let clothing;
 
-    var activity = $("#activity").find("a.active").text();
-    var jacket = jacketOn($("#jacket").button());
+    let activity = $("#activity").find("a.active").text();
+    let jacket = jacketOn($("#jacket").button());
 
     if (jacket && activity == "Work") {
 
@@ -531,10 +531,10 @@ function getClothing()
 
 function getAttire(combo)
 {
-    var sugg = "";
-    var clothing = $("#wear").text();
-    var activity = $("#activity").find("a.active").text();
-    var jacket = jacketOn($("#jacket").button());
+    let sugg = "";
+    let clothing = $("#wear").text();
+    let activity = $("#activity").find("a.active").text();
+    let jacket = jacketOn($("#jacket").button());
 
     if (clothing.toLowerCase().includes("long sleeves") ||
         clothing.toLowerCase().includes("rolled sleeves")) {
@@ -574,16 +574,15 @@ function toTitleCase(str)
 
 function makeArray(size)
 {
-    var i;
-    var array = [];
-    for (i = 0; i < size; ++i)
+    let array = [];
+    for (let i = 0; i < size; ++i)
         array.push(0);
     return array;
 }
 
 function all(array)
 {
-    for (i in array)
+    for (let i in array)
         if (array[i] == 0)
             return false;
     return true;
@@ -591,7 +590,7 @@ function all(array)
 
 function lsTest()
 {
-    var test = "test";
+    let test = "test";
     try {
         localStorage.setItem(test, test);
         localStorage.removeItem(test);
