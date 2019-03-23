@@ -274,6 +274,9 @@ function ClothingSelector()
 
 var selector = new ClothingSelector();
 
+$("#againButton").button().hide();
+$("#acceptButton").button().hide();
+
 // Remove coats/pants if it isn't summer
 var holidays = hd.getHolidays(TODAY.getFullYear());
 var memorialDay = holidays.filter(function(val, idx, arr) {
@@ -300,7 +303,14 @@ $("#location a").click(function () {
 });
 
 $("#activity a").on("shown.bs.tab", function (event) {
+    if ($("#activity").find("a.active").text() == "Home")
+        $("#jacket").button().prop("disabled", true);
+    else
+        $("#jacket").button().prop("disabled", false);
     getClothing();
+    var combo = selector.getCombo();
+    var sugg = getAttire(combo);
+    $("#attire").html(toTitleCase(sugg));
     if ($("#attireButton").button().is(":hidden")) {
         $("#attire").html("");
         $("#attireButton").button().show();
@@ -331,15 +341,11 @@ $("#acceptButton").click(function () {
 });
 
 $("#jacket").click(function () {
-    $(this).button().removeClass("focus");
-    if ($(this).button().hasClass("btn-secondary")) {
-        $(this).button().addClass("btn-outline-secondary");
-        $(this).button().removeClass("btn-secondary");
-    } else {
-        $(this).button().addClass("btn-secondary");
-        $(this).button().removeClass("btn-outline-secondary");
-    }
+    $(this).button().toggleClass("btn-default btn-secondary");
     getClothing();
+    var combo = selector.getCombo();
+    var sugg = getAttire(combo);
+    $("#attire").html(toTitleCase(sugg));
 });
 
 if (HAVE_LS)
@@ -457,7 +463,7 @@ function getClothing()
     var clothing;
 
     var activity = $("#activity").find("a.active").text();
-    var jacket = $("#jacket").button().hasClass("btn-secondary");
+    var jacket = jacketOn($("#jacket").button());
 
     if (jacket && activity == "Work") {
 
@@ -543,6 +549,8 @@ function getAttire(combo)
 {
     var sugg = "";
     var clothing = $("#wear").text();
+    var activity = $("#activity").find("a.active").text();
+    var jacket = jacketOn($("#jacket").button());
 
     if (clothing.toLowerCase().includes("long sleeves") ||
         clothing.toLowerCase().includes("rolled sleeves")) {
@@ -559,8 +567,8 @@ function getAttire(combo)
         sugg += combo.sweater + " sweater";
     }
 
-    if (clothing.includes("jacket") ||
-        clothing.includes("sweater")) {
+    if (jacket && activity != "Home" && (clothing.includes("jacket") ||
+					 clothing.includes("sweater"))) {
         if (sugg.length > 0)
             sugg += ", ";
         sugg += combo.coat + " coat";
@@ -605,7 +613,12 @@ function lsTest()
         localStorage.setItem(test, test);
         localStorage.removeItem(test);
         return true;
-    } catch(e) {
+    } catch (e) {
         return false;
     }
+}
+
+function jacketOn(obj)
+{
+    return obj.hasClass("btn-secondary");
 }
