@@ -146,79 +146,49 @@ function ClothingSelector()
     };
 
     this.nextShortShirt = function() {
-
-        let counts = makeArray(this.shortShirts.length);
-        while (true) {
-            let idx = Math.floor(Math.random() * this.shortShirts.length);
-            counts[idx]++;
-            this.shortShirt = this.shortShirts[idx];
-            if (!this.oldShortShirts.includes(this.shortShirt))
-                return true;
-            if (all(counts))
-                return false;
-        }
+	let diff = this.shortShirts.filter(x => !this.oldShortShirts.includes(x));
+	if (diff.length == 0)
+	    return false;
+	this.shortShirt = diff[Math.floor(Math.random() * diff.length)];
+        return true;
     };
 
     this.nextLongShirt = function() {
-
-        let counts = makeArray(this.longShirts.length);
-        while (true) {
-            let idx = Math.floor(Math.random() * this.longShirts.length);
-            counts[idx]++;
-            this.longShirt = this.longShirts[idx];
-            if (!this.oldLongShirts.includes(this.longShirt))
-                return true;
-            if (all(counts))
-                return false;
-        }
+	let diff = this.longShirts.filter(x => !this.oldLongShirts.includes(x));
+	if (diff.length == 0)
+	    return false;
+	this.longShirt = diff[Math.floor(Math.random() * diff.length)];
+        return true;
     };
 
     this.nextSweater = function() {
-
-        let counts = makeArray(this.sweaters.length);
-        while (true) {
-            let idx = Math.floor(Math.random() * this.sweaters.length);
-            counts[idx]++;
-            this.sweater = this.sweaters[idx];
-            if (this.sweater != this.oldSweaters &&
-                (!(this.shirt in this.shirtData) ||
-                 !this.shirtData[this.shirt].includes(this.sweater)))
-                return true;
-            if (all(counts))
-                return false;
-        }
+	let diff = this.sweaters.filter(x => x != this.oldSweaters &&
+					(!(this.longShirt in this.shirtData) ||
+					 !this.shirtData[this.longShirt].includes(x)));
+	if (diff.length == 0)
+	    return false;
+	this.sweater = diff[Math.floor(Math.random() * diff.length)];
+	return true;
     };
 
     this.nextCoat = function() {
-
-        let counts = makeArray(this.coats.length);
-        while (true) {
-            let idx = Math.floor(Math.random() * this.coats.length);
-            counts[idx]++;
-            this.coat = this.coats[idx];
-            if (this.coat != this.oldCoats)
-                return true;
-            if (all(counts))
-                return false;
-        }
+	let diff = this.coats.filter(x => x != this.oldCoats &&
+				     (!(this.sweater in this.sweaterCoatData) ||
+				      !this.sweaterCoatData[this.sweater].includes(x)));
+	if (diff.length == 0)
+	    return false;
+	this.coat = diff[Math.floor(Math.random() * diff.length)];
+	return true;
     };
 
     this.nextPants = function() {
-
-        let counts = makeArray(this.pantss.length);
-        while (true) {
-            let idx = Math.floor(Math.random() * this.pantss.length);
-            counts[idx]++;
-            this.pants = this.pantss[idx];
-            if (this.coatData[this.coat].includes(this.pants) &&
-                (!(this.sweater in this.sweaterData) ||
-                 !this.sweaterData[this.sweater].includes(this.pants)) &&
-                (!(this.sweater in this.sweaterCoatData) ||
-                 !this.sweaterCoatData[this.sweater].includes(this.coat)))
-                return true;
-            if (all(counts))
-                return false;
-        }
+	let diff = this.pantss.filter(x => this.coatData[this.coat].includes(x) &&
+				      (!(this.sweater in this.sweaterData) ||
+				       !this.sweaterData[this.sweater].includes(x)));
+	if (diff.length == 0)
+	    return false;
+	this.pants = diff[Math.floor(Math.random() * diff.length)];
+	return true;
     };
 
     this.nextCombo = function() {
