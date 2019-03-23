@@ -331,12 +331,13 @@ $("#acceptButton").click(function () {
 });
 
 $("#jacket").click(function () {
-    if ($(this)[0].classList.contains("btn-secondary")) {
-        $(this)[0].classList.add("btn-outline-secondary");
-        $(this)[0].classList.remove("btn-secondary");
+    $(this).button().removeClass("focus");
+    if ($(this).button().hasClass("btn-secondary")) {
+        $(this).button().addClass("btn-outline-secondary");
+        $(this).button().removeClass("btn-secondary");
     } else {
-        $(this)[0].classList.add("btn-secondary");
-        $(this)[0].classList.remove("btn-outline-secondary");
+        $(this).button().addClass("btn-secondary");
+        $(this).button().removeClass("btn-outline-secondary");
     }
     getClothing();
 });
@@ -456,7 +457,7 @@ function getClothing()
     var clothing;
 
     var activity = $("#activity").find("a.active").text();
-    var jacket = $("#jacket")[0].classList.contains("btn-secondary");
+    var jacket = $("#jacket").button().hasClass("btn-secondary");
 
     if (jacket && activity == "Work") {
 
