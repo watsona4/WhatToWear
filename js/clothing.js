@@ -30,16 +30,18 @@ function ClothingSelector()
                      "charcoal",
                      "navy"];
 
-    this.coats = ["navy",
+    this.coats = [// "navy",
                   "grey",
                   "brown",
-                  "charcoal",
+                  // "charcoal",
                   "tan"];
 
     this.pantss = ["khaki",
                    // "navy",
                    "brown",
-                   "grey"];
+                   // "grey",
+		   "olive",
+		  ];
 
     this.summerPants = [];
     this.summerCoats = ["tan"];
