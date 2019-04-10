@@ -40,8 +40,8 @@ function ClothingSelector()
                    // "navy",
                    "brown",
                    // "grey",
-		   "olive",
-		  ];
+                   "olive",
+                  ];
 
     this.summerPants = [];
     this.summerCoats = ["tan"];
@@ -147,67 +147,49 @@ function ClothingSelector()
                 pants: this.pants};
     };
 
-    this.nextShortShirt = function() {
-	let diff = this.shortShirts.filter(x => !this.oldShortShirts.includes(x));
-	if (diff.length == 0)
-	    return false;
-	this.shortShirt = diff[Math.floor(Math.random() * diff.length)];
-        return true;
-    };
+    this.shortShirtFilter = function() {
+        return element => !this.oldShortShirts.includes(element);
+    }
 
-    this.nextLongShirt = function() {
-	let diff = this.longShirts.filter(x => !this.oldLongShirts.includes(x));
-	if (diff.length == 0)
-	    return false;
-	this.longShirt = diff[Math.floor(Math.random() * diff.length)];
-        return true;
-    };
+    this.longShirtFilter = function() {
+        return element => !this.oldLongShirts.includes(element);
+    }
 
-    this.nextSweater = function() {
-	let diff = this.sweaters.filter(x => x != this.oldSweaters &&
-					(!(this.longShirt in this.shirtData) ||
-					 !this.shirtData[this.longShirt].includes(x)));
-	if (diff.length == 0)
-	    return false;
-	this.sweater = diff[Math.floor(Math.random() * diff.length)];
-	return true;
-    };
+    this.sweaterFilter = function(longShirt) {
+        return element => element != this.oldSweaters &&
+            (!(longShirt in this.shirtData) ||
+             !this.shirtData[longShirt].includes(element));
+    }
 
-    this.nextCoat = function() {
-	let diff = this.coats.filter(x => x != this.oldCoats &&
-				     (!(this.sweater in this.sweaterCoatData) ||
-				      !this.sweaterCoatData[this.sweater].includes(x)));
-	if (diff.length == 0)
-	    return false;
-	this.coat = diff[Math.floor(Math.random() * diff.length)];
-	return true;
-    };
+    this.coatFilter = function(sweater) {
+        return element => element != this.oldCoats &&
+            (!(sweater in this.sweaterCoatData) ||
+             !this.sweaterCoatData[sweater].includes(element));
+    }
 
-    this.nextPants = function() {
-	let diff = this.pantss.filter(x => this.coatData[this.coat].includes(x) &&
-				      (!(this.sweater in this.sweaterData) ||
-				       !this.sweaterData[this.sweater].includes(x)));
-	if (diff.length == 0)
-	    return false;
-	this.pants = diff[Math.floor(Math.random() * diff.length)];
-	return true;
-    };
+    this.pantsFilter = function(coat, sweater) {
+        return element => this.coatData[coat].includes(element) &&
+            (!(sweater in this.sweaterData) ||
+             !this.sweaterData[sweater].includes(element));
+    }
 
     this.nextCombo = function() {
 
-        while (true) {
-            if (!this.nextShortShirt())
-                continue;
-            if (!this.nextLongShirt())
-                continue;
-            if (!this.nextSweater())
-                continue;
-            if (!this.nextCoat())
-                continue;
-            if (!this.nextPants())
-                continue;
-            break;
-        }
+        var combos = [];
+        for (const shortShirt of this.shortShirts.filter(this.shortShirtFilter()))
+            for (const longShirt of this.longShirts.filter(this.longShirtFilter()))
+                for (const sweater of this.sweaters.filter(this.sweaterFilter(longShirt)))
+                    for (const coat of this.coats.filter(this.coatFilter(sweater)))
+                        for (const pants of this.pantss.filter(this.pantsFilter(coat, sweater)))
+                            combos.push([shortShirt, longShirt, sweater, coat, pants]);
+
+        var combo = combos[Math.floor(Math.random() * combos.length)];
+
+        this.shortShirt = combo[0];
+        this.longShirt = combo[1];
+        this.sweater = combo[2];
+        this.coat = combo[3];
+        this.pants = combo[4];
 
         return this.getCombo();
     }
@@ -402,7 +384,7 @@ function getWeatherData(url)
                 high = forecast.periods[i].temperature;
             else
                 low = forecast.periods[i].temperature;
-	}
+        }
 
         $("#hilo").html("High: " + high.toFixed(0) + " &deg;F, " +
                         "Low: " + low.toFixed(0) + " &deg;F");
@@ -524,7 +506,7 @@ function getAttire(combo)
     }
 
     if (jacket && activity != "Home" && (clothing.includes("jacket") ||
-					 clothing.includes("sweater"))) {
+                                         clothing.includes("sweater"))) {
         if (sugg.length > 0)
             sugg += ", ";
         sugg += combo.coat + " coat";
@@ -541,7 +523,7 @@ function getAttire(combo)
 function toTitleCase(str)
 {
     return str.replace(/\w\w*/g, (txt) =>
-		       txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+                       txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 }
 
 function makeArray(size)
@@ -578,15 +560,15 @@ function filterSummer(selector)
     let holidays = hd.getHolidays(today.getFullYear());
 
     let memorialDay = holidays.filter(
-	(val, idx, arr) => val.name == 'Memorial Day')[0].start;
+        (val, idx, arr) => val.name == 'Memorial Day')[0].start;
     let laborDay = holidays.filter(
-	(val, idx, arr) => val.name == 'Labor Day')[0].end;
+        (val, idx, arr) => val.name == 'Labor Day')[0].end;
 
     if (today < memorialDay || today >= laborDay) {
-	selector.coats = selector.coats.filter(
-	    (val, idx, arr) => !selector.summerCoats.includes(val));
-	selector.pantss = selector.pantss.filter(
-	    (val, idx, arr) => !selector.summerPants.includes(val));
+        selector.coats = selector.coats.filter(
+            (val, idx, arr) => !selector.summerCoats.includes(val));
+        selector.pantss = selector.pantss.filter(
+            (val, idx, arr) => !selector.summerPants.includes(val));
     }
 }
 
