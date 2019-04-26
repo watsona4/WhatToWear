@@ -168,28 +168,153 @@ function ClothingSelector()
     }
 
     this.pantsFilter = function(coat, sweater) {
-        return element => this.coatData[coat].includes(element) &&
-            (!(sweater in this.sweaterData) ||
-             !this.sweaterData[sweater].includes(element));
+        if (coat && sweater) {
+            return element => this.coatData[coat].includes(element) &&
+                (!(sweater in this.sweaterData) ||
+                 !this.sweaterData[sweater].includes(element));
+        } else if (coat) {
+            return element => this.coatData[coat].includes(element);
+        } else if (sweater) {
+            return element => (!(sweater in this.sweaterData) ||
+                               !this.sweaterData[sweater].includes(element));
+        } else {
+            return element => true;
+        }
     }
 
-    this.nextCombo = function() {
+    this.nextCombo = function(clothing) {
 
         var combos = [];
-        for (const shortShirt of this.shortShirts.filter(this.shortShirtFilter()))
+        if (clothing.longShirt && clothing.sweater && clothing.pants && clothing.coat) {
+
             for (const longShirt of this.longShirts.filter(this.longShirtFilter()))
                 for (const sweater of this.sweaters.filter(this.sweaterFilter(longShirt)))
                     for (const coat of this.coats.filter(this.coatFilter(sweater)))
                         for (const pants of this.pantss.filter(this.pantsFilter(coat, sweater)))
-                            combos.push([shortShirt, longShirt, sweater, coat, pants]);
+                            combos.push([longShirt, sweater, coat, pants]);
 
-        var combo = combos[Math.floor(Math.random() * combos.length)];
+            var combo = combos[Math.floor(Math.random() * combos.length)];
 
-        this.shortShirt = combo[0];
-        this.longShirt = combo[1];
-        this.sweater = combo[2];
-        this.coat = combo[3];
-        this.pants = combo[4];
+            this.shortShirt = false;
+            this.longShirt = combo[0];
+            this.sweater = combo[1];
+            this.coat = combo[2];
+            this.pants = combo[3];
+
+        } else if (clothing.longShirt && clothing.sweater && clothing.pants) {
+
+            for (const longShirt of this.longShirts.filter(this.longShirtFilter()))
+                for (const sweater of this.sweaters.filter(this.sweaterFilter(longShirt)))
+                    for (const pants of this.pantss.filter(this.pantsFilter(false, sweater)))
+                        combos.push([longShirt, sweater, pants]);
+
+            var combo = combos[Math.floor(Math.random() * combos.length)];
+
+            this.shortShirt = false;
+            this.longShirt = combo[0];
+            this.sweater = combo[1];
+            this.coat = false;
+            this.pants = combo[2];
+
+        } else if (clothing.longShirt && clothing.pants && clothing.coat) {
+
+            for (const longShirt of this.longShirts.filter(this.longShirtFilter()))
+                for (const coat of this.coats.filter(this.coatFilter(sweater)))
+                    for (const pants of this.pantss.filter(this.pantsFilter(coat, false)))
+                        combos.push([longShirt, coat, pants]);
+
+            var combo = combos[Math.floor(Math.random() * combos.length)];
+
+            this.shortShirt = false;
+            this.longShirt = combo[0];
+            this.sweater = false;
+            this.coat = combo[1];
+            this.pants = combo[2];
+
+        } else if (clothing.longShirt && clothing.pants) {
+
+            for (const longShirt of this.longShirts.filter(this.longShirtFilter()))
+                for (const pants of this.pantss.filter(this.pantsFilter(false, false)))
+                    combos.push([longShirt, pants]);
+
+            var combo = combos[Math.floor(Math.random() * combos.length)];
+
+            this.shortShirt = false;
+            this.longShirt = combo[0];
+            this.sweater = false;
+            this.coat = false;
+            this.pants = combo[1];
+
+        } else if (clothing.shortShirt && clothing.pants && clothing.coat) {
+
+            for (const shortShirt of this.shortShirts.filter(this.shortShirtFilter()))
+                for (const coat of this.coats.filter(this.coatFilter(sweater)))
+                    for (const pants of this.pantss.filter(this.pantsFilter(coat, false)))
+                        combos.push([shortShirt, coat, pants]);
+
+            var combo = combos[Math.floor(Math.random() * combos.length)];
+
+            this.shortShirt = combo[0];
+            this.longShirt = false;
+            this.sweater = false;
+            this.coat = combo[1];
+            this.pants = combo[2];
+
+        } else if (clothing.shortShirt && clothing.pants) {
+
+            for (const shortShirt of this.shortShirts.filter(this.shortShirtFilter()))
+                for (const pants of this.pantss.filter(this.pantsFilter(false, false)))
+                    combos.push([shortShirt, pants]);
+
+            var combo = combos[Math.floor(Math.random() * combos.length)];
+
+            this.shortShirt = combo[0];
+            this.longShirt = false;
+            this.sweater = false;
+            this.coat = false;
+            this.pants = combo[1];
+
+        } else if (clothing.longShirt && clothing.sweater) {
+
+            for (const longShirt of this.longShirts.filter(this.longShirtFilter()))
+                for (const sweater of this.sweaters.filter(this.sweaterFilter(longShirt)))
+                    combos.push([longShirt, sweater]);
+
+            var combo = combos[Math.floor(Math.random() * combos.length)];
+
+            this.shortShirt = false;
+            this.longShirt = combo[0];
+            this.sweater = combo[1];
+            this.coat = false;
+            this.pants = false;
+
+        } else if (clothing.longShirt) {
+
+            for (const longShirt of this.longShirts.filter(this.longShirtFilter()))
+                combos.push([longShirt]);
+
+            var combo = combos[Math.floor(Math.random() * combos.length)];
+
+            this.shortShirt = false;
+            this.longShirt = combo[0];
+            this.sweater = false;
+            this.coat = false;
+            this.pants = false;
+
+        } else if (clothing.shortShirt) {
+
+            for (const shortShirt of this.shortShirts.filter(this.shortShirtFilter()))
+                combos.push([shortShirt]);
+
+            var combo = combos[Math.floor(Math.random() * combos.length)];
+
+            this.shortShirt = combo[0];
+            this.longShirt = false;
+            this.sweater = false;
+            this.coat = false;
+            this.pants = false;
+
+        }
 
         return this.getCombo();
     }
@@ -245,7 +370,7 @@ $("#activity a").on("shown.bs.tab", function (event) {
         $("#jacket").button().prop("disabled", true);
     else
         $("#jacket").button().prop("disabled", false);
-    getClothing();
+    let clothing = getClothing();
     let combo = selector.getCombo();
     let sugg = getAttire(combo);
     $("#attire").html(toTitleCase(sugg));
@@ -280,7 +405,7 @@ $("#acceptButton").click(function () {
 
 $("#jacket").click(function () {
     $(this).button().toggleClass("btn-default btn-secondary");
-    getClothing();
+    let clothing = getClothing();
     let combo = selector.getCombo();
     let sugg = getAttire(combo);
     $("#attire").html(toTitleCase(sugg));
@@ -293,7 +418,8 @@ update();
 
 function generate()
 {
-    let combo = selector.nextCombo();
+    let clothing = getClothing();
+    let combo = selector.nextCombo(clothing);
     let sugg = getAttire(combo);
     $("#attire").html(toTitleCase(sugg));
 }
@@ -304,6 +430,7 @@ function update()
 
     getWeatherData(url);
 
+    let clothing = getClothing();
     let combo = selector.getCombo();
     let sugg = getAttire(combo);
     $("#attire").html(toTitleCase(sugg));
@@ -398,124 +525,180 @@ function getWeatherData(url)
 function getClothing()
 {
     let temperature = parseFloat($("#temp").attr("value"));
-    let clothing;
+    let clothing = {
+        shortShirt: false,
+        longShirt: false,
+        sweater: false,
+        pants: false,
+        coat: false,
+        desc: null,
+    };
 
     let activity = $("#activity").find("a.active").text();
     let jacket = jacketOn($("#jacket").button());
 
-    if (jacket && activity == "Work") {
+    if (activity == "Work") {
 
-        if (temperature < -22.0)
-            clothing = "Long sleeves, sweater, coat and hat, heavy " +
+        clothing.pants = true;
+        if (jacket)
+            clothing.coat = true;
+
+        if (temperature < -22.0) {
+            clothing.longShirt = true;
+            clothing.sweater = true;
+            clothing.desc = "Long sleeves, sweater, coat and hat, heavy " +
             "gloves, earmuffs, scarf, boots, silk pants, and silk shirt";
-        else if (temperature < -13.0)
-            clothing = "Long sleeves, sweater, coat and hat, heavy " +
+        } else if (temperature < -13.0) {
+            clothing.longShirt = true;
+            clothing.sweater = true;
+            clothing.desc = "Long sleeves, sweater, coat and hat, heavy " +
             "gloves, earmuffs, scarf, boots, and silk pants";
-        else if (temperature < -4.0)
-            clothing = "Long sleeves, sweater, coat and hat, gloves, " +
+        } else if (temperature < -4.0) {
+            clothing.longShirt = true;
+            clothing.sweater = true;
+            clothing.desc = "Long sleeves, sweater, coat and hat, gloves, " +
             "earmuffs, scarf, boots, and silk pants";
-        else if (temperature < 5.0)
-            clothing = "Long sleeves, sweater, coat and hat, gloves, " +
+        } else if (temperature < 5.0) {
+            clothing.longShirt = true;
+            clothing.sweater = true;
+            clothing.desc = "Long sleeves, sweater, coat and hat, gloves, " +
             "earmuffs, scarf, and boots";
-        else if (temperature < 14.0)
-            clothing = "Long sleeves, sweater, coat and hat, gloves, " +
+        } else if (temperature < 14.0) {
+            clothing.longShirt = true;
+            clothing.sweater = true;
+            clothing.desc = "Long sleeves, sweater, coat and hat, gloves, " +
             "earmuffs, and scarf";
-        else if (temperature < 23.0)
-            clothing = "Long sleeves, sweater, coat and hat, gloves, " +
+        } else if (temperature < 23.0) {
+            clothing.longShirt = true;
+            clothing.sweater = true;
+            clothing.desc = "Long sleeves, sweater, coat and hat, gloves, " +
             "and earmuffs";
-        else if (temperature < 32.0)
-            clothing = "Long sleeves, sweater, coat and hat, and gloves";
-        else if (temperature < 41.0)
-            clothing = "Long sleeves, sweater, coat and hat";
-        else if (temperature < 50.0)
-            clothing = "Long sleeves and sweater";
-        else if (temperature < 59.0)
-            clothing = "Long sleeves and jacket";
-        else if (temperature < 68.0)
-            clothing = "Rolled sleeves and jacket";
-        else if (temperature < 77.0)
-            clothing = "Short sleeves and jacket";
-        else
-            clothing = "Short sleeves, no jacket";
+        } else if (temperature < 32.0) {
+            clothing.longShirt = true;
+            clothing.sweater = true;
+            clothing.desc = "Long sleeves, sweater, coat and hat, and gloves";
+        } else if (temperature < 41.0) {
+            clothing.longShirt = true;
+            clothing.sweater = true;
+            clothing.desc = "Long sleeves, sweater, coat and hat";
+        } else if (temperature < 50.0) {
+            clothing.longShirt = true;
+            clothing.sweater = true;
+            clothing.desc = "Long sleeves and sweater";
+        } else if (temperature < 59.0) {
+            clothing.longShirt = true;
+            clothing.desc = "Long sleeves";
+            if (jacket) clothing.desc += " and jacket";
+        } else if (temperature < 68.0) {
+            clothing.longShirt = true;
+            clothing.desc = "Rolled sleeves";
+            if (jacket) clothing.desc += " and jacket";
+        } else if (temperature < 77.0) {
+            clothing.shortShirt = true;
+            clothing.desc = "Short sleeves";
+            if (jacket) clothing.desc += " and jacket";
+        } else {
+            clothing.shortShirt = true;
+            clothing.coat = false;
+            clothing.desc = "Short sleeves";
+            if (jacket) clothing.desc += ", no jacket";
+        }
     }
 
     else {
 
-        if (temperature < -22.0)
-            clothing = "Pants, long sleeves, coat and hat, sweater, gloves, " +
+        if (temperature < -22.0) {
+            clothing.longShirt = true;
+            clothing.sweater = true;
+            clothing.desc = "Pants, long sleeves, coat and hat, sweater, gloves, " +
             "earmuffs, scarf, long underwear, long undershirt, snow boots, " +
             "balaclava";
-        else if (temperature < -13.0)
-            clothing = "Pants, long sleeves, coat and hat, sweater, gloves, " +
+        } else if (temperature < -13.0) {
+            clothing.longShirt = true;
+            clothing.sweater = true;
+            clothing.desc = "Pants, long sleeves, coat and hat, sweater, gloves, " +
             "earmuffs, scarf, long underwear, long undershirt, snow boots";
-        else if (temperature < -4.0)
-            clothing = "Pants, long sleeves, coat and hat, sweater, gloves, " +
+        } else if (temperature < -4.0) {
+            clothing.longShirt = true;
+            clothing.sweater = true;
+            clothing.desc = "Pants, long sleeves, coat and hat, sweater, gloves, " +
             "earmuffs, scarf, long underwear, snow boots";
-        else if (temperature < 5.0)
-            clothing = "Pants, long sleeves, coat and hat, sweater, gloves, " +
+        } else if (temperature < 5.0) {
+            clothing.longShirt = true;
+            clothing.sweater = true;
+            clothing.desc = "Pants, long sleeves, coat and hat, sweater, gloves, " +
             "earmuffs, scarf, long underwear";
-        else if (temperature < 14.0)
-            clothing = "Pants, long sleeves, coat and hat, sweater, gloves, " +
+        } else if (temperature < 14.0) {
+            clothing.longShirt = true;
+            clothing.sweater = true;
+            clothing.desc = "Pants, long sleeves, coat and hat, sweater, gloves, " +
             "earmuffs, scarf, shoes";
-        else if (temperature < 23.0)
-            clothing = "Pants, long sleeves, coat and hat, sweater, gloves, " +
+        } else if (temperature < 23.0) {
+            clothing.longShirt = true;
+            clothing.sweater = true;
+            clothing.desc = "Pants, long sleeves, coat and hat, sweater, gloves, " +
             "earmuffs, shoes";
-        else if (temperature < 32.0)
-            clothing = "Pants, long sleeves, coat and hat, sweater, gloves, " +
+        } else if (temperature < 32.0) {
+            clothing.longShirt = true;
+            clothing.sweater = true;
+            clothing.desc = "Pants, long sleeves, coat and hat, sweater, gloves, " +
             "shoes";
-        else if (temperature < 41.0)
-            clothing = "Pants, long sleeves, jacket, sweater, shoes";
-        else if (temperature < 50.0)
-            clothing = "Pants, long sleeves, jacket, shoes";
-        else if (temperature < 59.0)
-            clothing = "Pants, long sleeves, shoes";
-        else if (temperature < 68.0)
-            clothing = "Pants, short sleeves, shoes";
-        else if (temperature < 77.0)
-            clothing = "Shorts, short sleeves, shoes";
-        else
-            clothing = "Shorts, short sleeves, sandals";
+        } else if (temperature < 41.0) {
+            clothing.longShirt = true;
+            clothing.sweater = true;
+            clothing.desc = "Pants, long sleeves, jacket, sweater, shoes";
+        } else if (temperature < 50.0) {
+            clothing.longShirt = true;
+            clothing.desc = "Pants, long sleeves, jacket, shoes";
+        } else if (temperature < 59.0) {
+            clothing.longShirt = true;
+            clothing.desc = "Pants, long sleeves, shoes";
+        } else if (temperature < 68.0) {
+            clothing.shortShirt = true;
+            clothing.desc = "Pants, short sleeves, shoes";
+        } else if (temperature < 77.0) {
+            clothing.shortShirt = true;
+            clothing.desc = "Shorts, short sleeves, shoes";
+        } else {
+            clothing.shortShirt = true;
+            clothing.desc = "Shorts, short sleeves, sandals";
+        }
     }
 
-    $("#wear").html(clothing);
+    $("#wear").html(clothing.desc);
 
     if (HAVE_LS)
         localStorage.Clothing = clothing;
+
+    return clothing;
 }
 
 function getAttire(combo)
 {
     let sugg = "";
-    let clothing = $("#wear").text();
-    let activity = $("#activity").find("a.active").text();
-    let jacket = jacketOn($("#jacket").button());
 
-    if (clothing.toLowerCase().includes("long sleeves") ||
-        clothing.toLowerCase().includes("rolled sleeves")) {
+    if (combo.longShirt)
         sugg += combo.longShirt + " shirt";
-    }
-
-    else if (clothing.toLowerCase().includes("short sleeves")) {
+    else if (combo.shortShirt)
         sugg += combo.shortShirt + " shirt";
-    }
 
-    if (clothing.includes("sweater")) {
+    if (combo.sweater) {
         if (sugg.length > 0)
             sugg += ", ";
         sugg += combo.sweater + " sweater";
     }
 
-    if (jacket && activity != "Home" && (clothing.includes("jacket") ||
-                                         clothing.includes("sweater"))) {
+    if (combo.coat) {
         if (sugg.length > 0)
             sugg += ", ";
         sugg += combo.coat + " coat";
     }
 
-    if (sugg.length > 0)
-        sugg += ", ";
-
-    sugg += combo.pants + " pants";
+    if (combo.pants) {
+        if (sugg.length > 0)
+            sugg += ", ";
+        sugg += combo.pants + " pants";
+    }
 
     return sugg;
 }
