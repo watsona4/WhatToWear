@@ -38,9 +38,9 @@ function ClothingSelector()
 
     this.pantss = ["khaki",
                    // "navy",
-                   "brown",
+                   // "brown",
                    // "grey",
-                   "olive",
+                   // "olive",
                   ];
 
     this.summerPants = [];
