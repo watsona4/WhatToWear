@@ -1,7 +1,7 @@
 # prepin
 
 > An in-place pre-processor for javascript files using C style pre-compile
-syntax to  compose custom builds from npm-packages.
+syntax to compose custom builds from npm-packages.
 
 [![NPM version][badge]][repo]
 

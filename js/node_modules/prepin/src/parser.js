@@ -1,13 +1,13 @@
-const {evaluate, splitlines} = require('./utils')
+const { evaluate, splitlines } = require('./utils')
 
 const PATTERN = /^\s*\/\/\s*#(if(?:def|ndef)?|elif|else|endif)\s*(.*)$/
 const COMMENT = '// # '
 const COMMENT_RE = /\/\/\s?#\s/
 const STATES = {
-  if: {elif: 1, else: 1, endif: 1},
-  elif: {elif: 1, else: 1, endif: 1},
-  else: {endif: 1},
-  endif: {if: 1, ifdef: 1, ifndef: 1}
+  if: { elif: 1, else: 1, endif: 1 },
+  elif: { elif: 1, else: 1, endif: 1 },
+  else: { endif: 1 },
+  endif: { if: 1, ifdef: 1, ifndef: 1 }
 }
 STATES.ifdef = STATES.ifndef = STATES.if
 

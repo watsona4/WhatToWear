@@ -2,19 +2,30 @@
 
 var fs = require('fs');
 
+var SPLIT = /(\/\/\s*#(?:(?!\/\/\s*#).)*)/g;
+
 module.exports = {
   splitlines: splitlines,
   read: read,
   write: write,
   evaluate: evaluate
-};
 
-/**
-* @param {string} data
-* @return {string[]}
-*/
-function splitlines(data) {
-  return data.split(/(?:\r\n|\r|\n)/g);
+  /**
+  * @param {string} data
+  * @return {string[]}
+  */
+};function splitlines(data) {
+  return data.split(/(?:\r\n|\r|\n)/g).reduce(function (a, line) {
+    var l = line.split(SPLIT).filter(Boolean);
+    if (l.length > 1) {
+      l.map(function (line) {
+        return a.push(line);
+      });
+    } else {
+      a.push(line);
+    }
+    return a;
+  }, []);
 }
 
 /**

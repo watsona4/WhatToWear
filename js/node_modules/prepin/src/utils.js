@@ -1,5 +1,7 @@
 const fs = require('fs')
 
+const SPLIT = /(\/\/\s*#(?:(?!\/\/\s*#).)*)/g
+
 module.exports = {
   splitlines,
   read,
@@ -12,7 +14,15 @@ module.exports = {
 * @return {string[]}
 */
 function splitlines (data) {
-  return data.split(/(?:\r\n|\r|\n)/g)
+  return data.split(/(?:\r\n|\r|\n)/g).reduce((a, line) => {
+    const l = line.split(SPLIT).filter(Boolean)
+    if (l.length > 1) {
+      l.map(line => a.push(line))
+    } else {
+      a.push(line)
+    }
+    return a
+  }, [])
 }
 
 /**
