@@ -463,7 +463,7 @@ function getUrl()
 
 function convertTemp(units, temp)
 {
-    if (units == "unit:degC")
+    if (units == "wmoUnit:degC")
         return temp * 9 / 5 + 32.0;
     return temp;
 }
