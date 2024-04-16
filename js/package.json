@@ -1,0 +1,26 @@
+{
+  "name": "what-to-wear",
+  "version": "1.0.0",
+  "main": "clothing.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/watsona4/WhatToWear.git"
+  },
+  "author": "Aaron M. Watson",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/watsona4/WhatToWear/issues"
+  },
+  "homepage": "https://github.com/watsona4/WhatToWear#readme",
+  "description": "",
+  "dependencies": {
+    "browserify": "^17.0.0",
+    "date-holidays": "^3.23.10"
+  },
+  "devDependencies": {
+    "esbuild": "0.20.2"
+  }
+}
