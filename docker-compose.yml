@@ -1,8 +1,21 @@
 services:
   clothing:
-    image: clothing:latest
-    build: /var/www/flask
+    image: ghcr.io/watsona4/clothing:latest
+    build: .
     restart: unless-stopped
-#    ports:
-#      - 5000:8000
-    network_mode: host
+    networks:
+      - clothing
+  nginx:
+    image: nginx:latest
+    restart: always
+    volumes:
+      - ./nginx/templates:/etc/nginx/templates:ro
+      - ./html:/var/www/html:ro
+    ports:
+      - 8256:8080
+    networks:
+      - clothing
+
+networks:
+  clothing:
+    driver: bridge
