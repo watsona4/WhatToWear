@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head
+         content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>What to Wear</title>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+          crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.0/css/all.css"
+          integrity="sha384-Mmxa0mLqhmOeaE8vgOSbKacftZcsNYDjQzuCOm6D02luYSzBG8vpaOykv9lFQ51Y"
+          crossorigin="anonymous">
+
+    <style>
+      .center {
+          text-align: center;
+          vertical-align: middle;
+      }
+      h2.center {
+          font-weight: bold;
+      }
+      .middle {
+          display: inline-block;
+          vertical-align: middle;
+      }
+      h2.middle {
+          font-weight: bold;
+      }
+      img {
+          display: block;
+          margin: auto;
+          vertical-align: middle;
+      }
+    </style>
+
+  </head>
+
+  <body>
+
+    <div class="container">
+
+      <ul id="location" class="nav nav-tabs">
+        <li class="nav-item"><a class="nav-link active" href="#">Greenwich</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">Schenectady</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">Houston</a></li>
+      </ul>
+
+      <div class="row">
+        <div class="col">
+          <h4>Selection the location above and the activity below</h4>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-2">
+          <img id="image" class="img-responsive" src="">
+        </div>
+        <div class="col-4">
+          <h2 id="temp" class="center"></h2>
+        </div>
+        <div class="col-6">
+          <h4 id="feels"></h4>
+          <h4 id="hilo"></h4>
+          <h4 id="fcst"></h4>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-4">
+          <h2>Rec. clothing:</h2>
+        </div>
+        <div class="col-6">
+          <h3 id="wear"></h3>
+        </div>
+        <div class="col-2">
+          <button id="jacket" class="btn btn-default" data-toggle="button">
+            Jacket
+          </button>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-4">
+          <h2>Sugg. attire:</h2>
+        </div>
+        <div class="col-8">
+          <h3 id="attire"></h3>
+          </br>
+          <button id="attireButton" type="button" class="btn btn-outline-primary">
+            <i class="fas fa-play"></i> Get Suggestion
+          </button>
+          <button id="againButton" type="button" class="btn btn-outline-primary">
+             <i class="fas fa-redo"></i> Try Again
+          </button>
+          <button id="acceptButton" type="button" class="btn btn-outline-primary">
+            <i class="fas fa-check"></i> Accept
+          </button>
+        </div>
+      </div>
+
+      <ul id="activity" class="nav nav-pills">
+        <li class="nav-item"><a class="nav-link active" href="#">Work</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
+      </ul>
+
+    </div><!-- /.container -->
+
+    <!-- Bootstrap core JavaScript
+         ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+            integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+            crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+            integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+            crossorigin="anonymous"></script>
+
+    <!-- Clothing Script -->
+    <script type="module" src="js/clothing.js"></script>
+
+  </body>
+</html>
