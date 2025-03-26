@@ -1,37 +1,40 @@
 import logging
 import os
 import os.path
-import shelve
 
-from flask import Flask, request, jsonify
+import cachelib  # type: ignore
+from flask import Flask, jsonify, request
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-db_file = 'clothing_data.db'
+CACHE = cachelib.RedisCache(
+    host="redis", port=6379, db=0, password=os.environ.get("REDIS_PASSWORD")
+)
 
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)  # type: ignore
 
-app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_host=1)
+logging.basicConfig(level=logging.DEBUG)
+LOG = logging.getLogger(__name__)
 
-if os.path.exists(db_file):
-    os.remove(db_file)
 
-@app.route('/save_data', methods=['POST'])
+@app.post("/save_data")
 def save_data():
+    LOG.debug(f"save_data(): {request=}")
     data = request.get_json()
-    with shelve.open(db_file) as db:
-        db[data['name']] = data['data']
-    return 'ok'
+    LOG.debug(f"save_data(): {data=}")
+    CACHE.add(data["name"], data["data"])
+    return "OK", 200
 
-@app.route('/load_data', methods=['POST'])
+
+@app.post("/load_data")
 def load_data():
+    LOG.debug(f"load_data(): {request=}")
     data = request.get_json()
-    with shelve.open(db_file) as db:
-        val = []
-        try:
-            val = db[data['name']]
-        except KeyError:
-            pass
+    LOG.debug(f"load_data(): {data=}")
+    val = CACHE.get(data["name"])
+    LOG.debug(f"load_data(): {val=}")
     return jsonify(val)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app.run(debug=True)
