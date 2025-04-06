@@ -13,6 +13,8 @@ services:
     depends_on:
       - nginx
       - redis
+    healthcheck:
+      test: curl -f http://localhost:8000/health
   nginx:
     image: nginx:latest
     restart: always
@@ -23,6 +25,8 @@ services:
       - 8256:8080
     networks:
       - clothing
+    healthcheck:
+      test: curl -f http://localhost:8080/index.html
   redis:
     image: redis:6.2-alpine
     restart: always
@@ -33,6 +37,8 @@ services:
       - .env
     networks:
       - clothing
+    healthcheck:
+      test: redis-cli -a ${REDIS_PASSWORD} --raw incr ping
 
 networks:
   clothing:
