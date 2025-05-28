@@ -148,7 +148,9 @@ class ClothingSelector {
     };
     
     shortShirtFilter() {
-        return elem => !this.oldShortShirts.includes(elem);
+        const today = new Date();
+        let isFriday = e => (today.getDay() == 4) == (e == "nnl");
+        return elem => !this.oldShortShirts.includes(elem) && isFriday(elem);
     }
     
     longShirtFilter() {
@@ -156,8 +158,10 @@ class ClothingSelector {
     }
 
     sweaterFilter(shirt) {
-	let hasShirt = elem => shirt in this.shirtData && this.shirtData.get(shirt).includes(elem);
-        return elem => !this.oldSweaters.includes(elem) && !hasShirt(elem);
+        const today = new Date();
+        let isFriday = e => (today.getDay() == 4) == (e == "nnl");
+	    let hasShirt = elem => shirt in this.shirtData && this.shirtData.get(shirt).includes(elem);
+        return elem => !this.oldSweaters.includes(elem) && !hasShirt(elem) && isFriday(elem);
     }
 
     coatFilter(sweater) {
@@ -166,29 +170,31 @@ class ClothingSelector {
     }
     
     pantsFilter(coat, sweater, longShirt, shortShirt) {
+        const today = new Date();
+        let isFriday = e => (today.getDay() == 4) == (e == "jeans");
         let hasCoat = e => typeof coat !== 'undefined' ? coat in this.coatData && this.coatData.get(coat).includes(e) : true;
         let hasSweater = e => typeof sweater !== 'undefined' ? sweater in this.sweaterData && this.sweaterData.get(sweater).includes(e) : false;
         let hasLongShirt = e => typeof longShirt !== 'undefined' ? longShirt in this.shirtPantData && this.shirtPantData.get(longShirt).includes(e) : false;
         let hasShortShirt = e => typeof shortShirt !== 'undefined' ? shortShirt in this.shortShirtPantData && this.shortShirtPantData.get(shortShirt).includes(e) : false;
-            if (coat && sweater && longShirt) {
-            return elem => hasCoat(elem) && !hasSweater(elem) && !hasLongShirt(elem);
-            } else if (coat && sweater && shortShirt) {
-            return elem => hasCoat(elem) && !hasSweater(elem) && !hasShortShirt(elem);
-            } else if (coat && longShirt) {
-            return elem => hasCoat(elem) && !hasLongShirt(elem);
-            } else if (coat && shortShirt) {
-            return elem => hasCoat(elem) && !hasShortShirt(elem);
-            } else if (sweater && longShirt) {
-            return elem => !hasSweater(elem) && !hasLongShirt(elem);
-            } else if (sweater && shortShirt) {
-            return elem => !hasSweater(elem) && !hasShortShirt(elem);
-            } else if (longShirt) {
-            return elem => !hasLongShirt(elem);
-            } else if (shortShirt) {
-            return elem => !hasShortShirt(elem);
-            } else {
-            return elem => true;
-            }
+        if (coat && sweater && longShirt) {
+            return elem => isFriday(elem) && hasCoat(elem) && !hasSweater(elem) && !hasLongShirt(elem);
+        } else if (coat && sweater && shortShirt) {
+            return elem => isFriday(elem) &&hasCoat(elem) && !hasSweater(elem) && !hasShortShirt(elem);
+        } else if (coat && longShirt) {
+            return elem => isFriday(elem) &&hasCoat(elem) && !hasLongShirt(elem);
+        } else if (coat && shortShirt) {
+            return elem => isFriday(elem) &&hasCoat(elem) && !hasShortShirt(elem);
+        } else if (sweater && longShirt) {
+            return elem => isFriday(elem) &&!hasSweater(elem) && !hasLongShirt(elem);
+        } else if (sweater && shortShirt) {
+            return elem => isFriday(elem) &&!hasSweater(elem) && !hasShortShirt(elem);
+        } else if (longShirt) {
+            return elem => isFriday(elem) &&!hasLongShirt(elem);
+        } else if (shortShirt) {
+            return elem => isFriday(elem) &&!hasShortShirt(elem);
+        } else {
+            return elem => isFriday(elem);
+        }
     }
 
     nextCombo(clothing) {
@@ -197,10 +203,10 @@ class ClothingSelector {
         if (clothing.longShirt && clothing.sweater && clothing.pants && clothing.coat) {
 	    
 	    for (const longShirt of this.longShirts.filter(this.longShirtFilter()))
-                for (const sweater of this.sweaters.filter(this.sweaterFilter(longShirt)))
-		    for (const coat of this.coats.filter(this.coatFilter(sweater)))
-                        for (const pants of this.pantss.filter(this.pantsFilter(coat, sweater, longShirt, undefined)))
-			    combos.push([longShirt, sweater, coat, pants]);
+            for (const sweater of this.sweaters.filter(this.sweaterFilter(longShirt)))
+                for (const coat of this.coats.filter(this.coatFilter(sweater)))
+                    for (const pants of this.pantss.filter(this.pantsFilter(coat, sweater, longShirt, undefined)))
+			            combos.push([longShirt, sweater, coat, pants]);
 	    
 	    var combo = combos[Math.floor(Math.random() * combos.length)];
 	    
