@@ -20,15 +20,15 @@ function getUrl()
 {
     let greenwichUrl = {
         current: "https://api.weather.gov/stations/KGFL/observations/latest",
-        forecast: "https://api.weather.gov/gridpoints/ALY/63,79/forecast",
+        forecast: "https://api.weather.gov/gridpoints/ALY/77,84/forecast",
     };
     let schenectadyUrl = {
         current: "https://api.weather.gov/stations/KALB/observations/latest",
-        forecast: "https://api.weather.gov/gridpoints/ALY/53,65/forecast",
+        forecast: "https://api.weather.gov/gridpoints/ALY/65,69/forecast",
     };
     let houstonUrl = {
         current: "https://api.weather.gov/stations/KSGR/observations/latest",
-        forecast: "https://api.weather.gov/gridpoints/HGX/55,92/forecast",
+        forecast: "https://api.weather.gov/gridpoints/HGX/56,93/forecast",
     };
     let columbusUrl = {
         current: "https://api.weather.gov/stations/K66R/observations/latest",
