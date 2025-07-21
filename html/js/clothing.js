@@ -35,6 +35,10 @@ function getUrl()
         latitude: "29.635357",
         longitude: "-96.630387",
     };
+    let saint_philippe = {
+        latitude: "45.320495",
+        longitude: "-73.495637",
+    }
 
     let latlon = null;
 
@@ -50,6 +54,9 @@ function getUrl()
         break;
     case "Columbus":
         latlon = columbus;
+        break;
+    case "Saint-Philippe":
+        latlon = saint_philippe;
         break;
     }
 
