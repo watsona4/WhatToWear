@@ -1,7 +1,6 @@
 
 import os
 import logging
-import os.path
 import cachelib  # type: ignore
 from flask import Blueprint, request, jsonify
 
@@ -15,25 +14,33 @@ api_bp = Blueprint("api", __name__)
 @api_bp.post("/save_data")
 def save_data():
     if not request.is_json:
-        return jsonify({"error": "Invalid content type"}), 400
+        return jsonify({"error": "Request must be JSON"}), 400
+
     data = request.get_json(silent=True)
     if not data or "name" not in data or "data" not in data:
         return jsonify({"error": "Missing 'name' or 'data' field"}), 400
-    LOG.debug(f"save_data(): {data=}")
-    success = CACHE.add(data["name"], data["data"])
-    if not success:
-        return jsonify({"warning": "Data already exists for this key"}), 409
-    return "OK", 200
+
+    try:
+        CACHE.add(data["name"], data["data"])
+        return jsonify({"status": "success"}), 200
+    except Exception as e:
+        LOG.exception("Failed to save data")
+        return jsonify({"error": str(e)}), 500
 
 @api_bp.post("/load_data")
 def load_data():
     if not request.is_json:
-        return jsonify({"error": "Invalid content type"}), 400
+        return jsonify({"error": "Request must be JSON"}), 400
+
     data = request.get_json(silent=True)
     if not data or "name" not in data:
         return jsonify({"error": "Missing 'name' field"}), 400
-    LOG.debug(f"load_data(): {data=}")
-    val = CACHE.get(data["name"])
-    if val is None:
-        return jsonify({"error": "No data found for this key"}), 404
-    return jsonify(val)
+
+    try:
+        val = CACHE.get(data["name"])
+        if val is None:
+            return jsonify({"error": "No data found for that name"}), 404
+        return jsonify(val), 200
+    except Exception as e:
+        LOG.exception("Failed to load data")
+        return jsonify({"error": str(e)}), 500
