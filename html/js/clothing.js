@@ -30,6 +30,10 @@ function getUrl()
         current: "https://api.weather.gov/stations/KSGR/observations/latest",
         forecast: "https://api.weather.gov/gridpoints/HGX/55,92/forecast",
     };
+    let columbusUrl = {
+        current: "https://api.weather.gov/stations/K66R/observations/latest",
+        forecast: "https://api.weather.gov/gridpoints/HGX/17,91/forecast",
+    };
 
     switch ($("#location").find("a.active").text()) {
     case "Greenwich":
@@ -38,6 +42,8 @@ function getUrl()
         return schenectadyUrl;
     case "Houston":
         return houstonUrl;
+    case "Columbus":
+        return columbusUrl;
     }
 }
 
