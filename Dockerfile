@@ -18,4 +18,4 @@ COPY app.py .
 
 LABEL org.opencontainers.image.source=https://github.com/watsona4/clothing
 
-CMD ["gunicorn", "--log-level=debug", "app:app"]
+CMD ["gunicorn", "--bind=0.0.0.0:8000", "--log-level=debug", "app:app"]

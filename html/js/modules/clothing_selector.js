@@ -2,130 +2,141 @@ export { ClothingSelector, saveData, loadData };
 
 class ClothingSelector {
 
-    constructor()
-    {
-	this.longShirts = ["maroon",
-			   "green1",
-			   "green2",
-			   "white1",
-			   "white2",
-			   "grey1",
-			   "grey2"];
+    constructor() {
+        this.longShirts = ["maroon",
+                "green1",
+                "green2",
+                "white1",
+                "white2",
+                "grey1",
+                "grey2"];
 
-	this.shortShirts = ["black",
-                            // "grey",
-                            "maroon",
-                            "navy",
-			    "nnl"];
+        this.shortShirts = ["black",
+                                // "grey",
+                                "maroon",
+                                "navy",
+                    "nnl"];
 
-	this.sweaters = ["black",
-			 // "grey",
-			 "maroon",
-			 "navy",
-			 "nnl"];
+        this.sweaters = ["black",
+                // "grey",
+                "maroon",
+                "navy",
+                "nnl"];
 
-	this.coats = ["navy",
-		      "grey",
-		      "brown",
-		      "charcoal",
-		      "tan"];
+        this.coats = ["navy",
+                "grey",
+                "brown",
+                "charcoal",
+                "tan"];
 
-	this.pantss = ["khaki",
-                       "tan",
-                       "grey",
-                       "jeans"];
+        this.pantss = ["khaki",
+                        "tan",
+                        "grey",
+                        "jeans"];
 
-	this.summerPants = [];
-	this.summerCoats = ["tan"];
+        this.summerPants = [];
+        this.summerCoats = ["tan"];
 
-	// Key is coat, value is list of pants that go with coat.
-	this.coatData = new Map(Object.entries(
-	    {navy: ["grey",
-		    "tan",
-		    "khaki",
-		    "brown",
-		    "white"],
-	     tan: ["charcoal",
-		   "grey",
-		   "olive",
-		   "brown",
-		   "white"],
-	     brown: ["charcoal",
-		     "grey",
-                     "olive",
-                     "white"],
-             olive: ["charcoal",
-                     "grey",
-                     "tan",
-                     "khaki",
-                     "brown"],
-             grey: ["charcoal",
-                    "navy",
-                    "white"],
-             blue: ["navy",
-                    "tan",
-                    "khaki",
-                    "white"],
-             charcoal: ["grey",
-			"khaki"]
-            }));
+        // Key is coat, value is list of pants that go with coat.
+        this.coatData = new Map(Object.entries(
+            {navy: ["grey",
+                "tan",
+                "khaki",
+                "brown",
+                "white"],
+            tan: ["charcoal",
+            "grey",
+            "olive",
+            "brown",
+            "white"],
+            brown: ["charcoal",
+                "grey",
+                        "olive",
+                        "white"],
+                olive: ["charcoal",
+                        "grey",
+                        "tan",
+                        "khaki",
+                        "brown"],
+                grey: ["charcoal",
+                        "navy",
+                        "white"],
+                blue: ["navy",
+                        "tan",
+                        "khaki",
+                        "white"],
+                charcoal: ["grey",
+                "khaki"]
+                }));
 
-	// Key is shirt, value is list of sweaters that *dont* go with shirt.
-	this.shirtData = new Map(Object.entries(
-	    {maroon: ["maroon", "nnl"],
-             green: ["nnl"],
-             grey: ["grey", "navy", "nnl"]}));
+        // Key is shirt, value is list of sweaters that *dont* go with shirt.
+        this.shirtData = new Map(Object.entries(
+            {maroon: ["maroon", "nnl"],
+                green: ["nnl"],
+                grey: ["grey", "navy", "nnl"]}));
 
-	// Key is sweater, value is list of pants that *dont* go with sweater.
-	this.sweaterData = new Map(Object.entries(
-	    {black: ["khaki"],
-             grey: ["grey"],
-	     navy: ["khaki"]}));
+        // Key is sweater, value is list of pants that *dont* go with sweater.
+        this.sweaterData = new Map(Object.entries(
+            {black: ["khaki"],
+                grey: ["grey"],
+            navy: ["khaki"]}));
 
-	// Key is long shirt, value is list of pants that *dont* go with shirt.
-	this.shirtPantData = new Map(Object.entries(
-	    {maroon: ["khaki"],
-             green: ["grey"],
-	     grey: ["khaki"]}));
+        // Key is long shirt, value is list of pants that *dont* go with shirt.
+        this.shirtPantData = new Map(Object.entries(
+            {maroon: ["khaki"],
+                green: ["grey"],
+            grey: ["khaki"]}));
 
-	// Key is short shirt, value is list of pants that *dont* go with shirt.
-	this.shortShirtPantData = new Map(Object.entries(
-	    {black: ["khaki"],
-             grey: ["grey"],
-	     navy: ["khaki"]}));
+        // Key is short shirt, value is list of pants that *dont* go with shirt.
+        this.shortShirtPantData = new Map(Object.entries(
+            {black: ["khaki"],
+                grey: ["grey"],
+            navy: ["khaki"]}));
 
-	// Key is sweater, value is list of coats that *dont* go with sweater.
-	this.sweaterCoatData = new Map(Object.entries(
-	    {navy: ["navy"],
-             khaki: ["tan"],
-             charcoal: ["grey"]}));
+        // Key is sweater, value is list of coats that *dont* go with sweater.
+        this.sweaterCoatData = new Map(Object.entries(
+            {navy: ["navy"],
+                khaki: ["tan"],
+                charcoal: ["grey"]}));
     }
     
     async loadData() {
-	this.oldShortShirts = await loadData("ShortShirts");
-	console.log('loadData(): oldShortShirts:', this.oldShortShirts)
-	this.shortShirt = this.oldShortShirts[this.oldShortShirts.length - 1];
-	console.log('loadData(): shortShirt:', this.shortShirt)
-	
-	this.oldLongShirts = await loadData("LongShirts");
-	console.log('loadData(): oldLongShirts:', this.oldLongShirts)
-	this.longShirt = this.oldLongShirts[this.oldLongShirts.length - 1];
-	console.log('loadData(): longShirt:', this.longShirt)
-	
-	this.oldSweaters = await loadData("Sweaters");
-	console.log('loadData(): oldSweaters:', this.oldSweaters)
-	this.sweater = this.oldSweaters[this.oldSweaters.length - 1];
-	console.log('loadData(): sweater:', this.sweater)
-	
-	this.oldCoats = await loadData("Coats");
-	console.log('loadData(): oldCoats:', this.oldCoats)
-	this.coat = this.oldCoats;
-	console.log('loadData(): coat:', this.coat)
-	
-	this.oldPants = await loadData("Pants");
-	console.log('loadData(): oldPants:', this.oldPants)
-	this.pants = this.oldPants;
-	console.log('loadData(): pants:', this.pants)
+        this.oldShortShirts = await loadData("ShortShirts");
+        console.log('loadData(): oldShortShirts:', this.oldShortShirts);
+        if (this.oldShortShirts == null) {
+            this.oldShortShirts = [];
+            this.shortShirt = null;
+        } else
+            this.shortShirt = this.oldShortShirts[this.oldShortShirts.length - 1];
+        console.log('loadData(): shortShirt:', this.shortShirt)
+        
+        this.oldLongShirts = await loadData("LongShirts");
+        console.log('loadData(): oldLongShirts:', this.oldLongShirts)
+        if (this.oldLongShirts == null) {
+            this.oldLongShirts = [];
+            this.longShirt = null;
+        } else
+            this.longShirt = this.oldLongShirts[this.oldLongShirts.length - 1];
+        console.log('loadData(): longShirt:', this.longShirt)
+        
+        this.oldSweaters = await loadData("Sweaters");
+        console.log('loadData(): oldSweaters:', this.oldSweaters)
+        if (this.oldSweaters == null) {
+            this.oldSweaters = [];
+            this.sweater = null;
+        } else
+            this.sweater = this.oldSweaters[this.oldSweaters.length - 1];
+        console.log('loadData(): sweater:', this.sweater)
+        
+        this.oldCoats = await loadData("Coats");
+        console.log('loadData(): oldCoats:', this.oldCoats)
+        this.coat = this.oldCoats;
+        console.log('loadData(): coat:', this.coat)
+        
+        this.oldPants = await loadData("Pants");
+        console.log('loadData(): oldPants:', this.oldPants)
+        this.pants = this.oldPants;
+        console.log('loadData(): pants:', this.pants)
     }
     
     getCombo() {
@@ -155,29 +166,29 @@ class ClothingSelector {
     }
     
     pantsFilter(coat, sweater, longShirt, shortShirt) {
-	let hasCoat = e => typeof coat !== 'undefined' ? coat in this.coatData && this.coatData.get(coat).includes(e) : true;
-	let hasSweater = e => typeof sweater !== 'undefined' ? sweater in this.sweaterData && this.sweaterData.get(sweater).includes(e) : false;
-	let hasLongShirt = e => typeof longShirt !== 'undefined' ? longShirt in this.shirtPantData && this.shirtPantData.get(longShirt).includes(e) : false;
-	let hasShortShirt = e => typeof shortShirt !== 'undefined' ? shortShirt in this.shortShirtPantData && this.shortShirtPantData.get(shortShirt).includes(e) : false;
-        if (coat && sweater && longShirt) {
-	    return elem => hasCoat(elem) && !hasSweater(elem) && !hasLongShirt(elem);
-        } else if (coat && sweater && shortShirt) {
-	    return elem => hasCoat(elem) && !hasSweater(elem) && !hasShortShirt(elem);
-        } else if (coat && longShirt) {
-	    return elem => hasCoat(elem) && !hasLongShirt(elem);
-        } else if (coat && shortShirt) {
-	    return elem => hasCoat(elem) && !hasShortShirt(elem);
-        } else if (sweater && longShirt) {
-	    return elem => !hasSweater(elem) && !hasLongShirt(elem);
-        } else if (sweater && shortShirt) {
-	    return elem => !hasSweater(elem) && !hasShortShirt(elem);
-        } else if (longShirt) {
-	    return elem => !hasLongShirt(elem);
-        } else if (shortShirt) {
-	    return elem => !hasShortShirt(elem);
-        } else {
-	    return elem => true;
-        }
+        let hasCoat = e => typeof coat !== 'undefined' ? coat in this.coatData && this.coatData.get(coat).includes(e) : true;
+        let hasSweater = e => typeof sweater !== 'undefined' ? sweater in this.sweaterData && this.sweaterData.get(sweater).includes(e) : false;
+        let hasLongShirt = e => typeof longShirt !== 'undefined' ? longShirt in this.shirtPantData && this.shirtPantData.get(longShirt).includes(e) : false;
+        let hasShortShirt = e => typeof shortShirt !== 'undefined' ? shortShirt in this.shortShirtPantData && this.shortShirtPantData.get(shortShirt).includes(e) : false;
+            if (coat && sweater && longShirt) {
+            return elem => hasCoat(elem) && !hasSweater(elem) && !hasLongShirt(elem);
+            } else if (coat && sweater && shortShirt) {
+            return elem => hasCoat(elem) && !hasSweater(elem) && !hasShortShirt(elem);
+            } else if (coat && longShirt) {
+            return elem => hasCoat(elem) && !hasLongShirt(elem);
+            } else if (coat && shortShirt) {
+            return elem => hasCoat(elem) && !hasShortShirt(elem);
+            } else if (sweater && longShirt) {
+            return elem => !hasSweater(elem) && !hasLongShirt(elem);
+            } else if (sweater && shortShirt) {
+            return elem => !hasSweater(elem) && !hasShortShirt(elem);
+            } else if (longShirt) {
+            return elem => !hasLongShirt(elem);
+            } else if (shortShirt) {
+            return elem => !hasShortShirt(elem);
+            } else {
+            return elem => true;
+            }
     }
 
     nextCombo(clothing) {
@@ -323,65 +334,63 @@ class ClothingSelector {
 
         let shortShirtNum = Math.min(this.shortShirts.length - 1, 4);
         if (this.oldShortShirts.length < shortShirtNum)
-	    shortArray = this.oldShortShirts.slice();
+	        shortArray = this.oldShortShirts.slice();
         else
-	    shortArray = this.oldShortShirts.slice(1, shortShirtNum);
+	        shortArray = this.oldShortShirts.slice(1, shortShirtNum);
 	
         let longArray = [];
 	
         let longShirtNum = Math.min(this.longShirts.length - 1, 4);
         if (this.oldLongShirts.length < longShirtNum)
-	    longArray = this.oldLongShirts.slice();
+	        longArray = this.oldLongShirts.slice();
         else
-	    longArray = this.oldLongShirts.slice(1, longShirtNum);
+	        longArray = this.oldLongShirts.slice(1, longShirtNum);
 	
         let sweaterArray = [];
 	
         let sweaterNum = Math.min(this.sweaters.length - 1, 4);
         if (this.oldSweaters.length < sweaterNum)
-	    sweaterArray = this.oldSweaters.slice();
+	        sweaterArray = this.oldSweaters.slice();
         else
-	    sweaterArray = this.oldSweaters.slice(1, sweaterNum);
+	        sweaterArray = this.oldSweaters.slice(1, sweaterNum);
 	
         shortArray.push(this.shortShirt);
         longArray.push(this.longShirt);
-	sweaterArray.push(this.sweater);
+	    sweaterArray.push(this.sweater);
 	
-	console.log('saveData(): ShortShirts:', shortArray)
+        console.log('saveData(): ShortShirts:', shortArray)
         saveData("ShortShirts", shortArray);
-	console.log('saveData(): LongShirts:', longArray)
+        console.log('saveData(): LongShirts:', longArray)
         saveData("LongShirts", longArray);
-	console.log('saveData(): Sweaters:', sweaterArray)
+        console.log('saveData(): Sweaters:', sweaterArray)
         saveData("Sweaters", sweaterArray);
-	console.log('saveData(): Coats:', this.coat)
+        console.log('saveData(): Coats:', this.coat)
         saveData("Coats", this.coat);
-	console.log('saveData(): Pants:', this.pants)
+        console.log('saveData(): Pants:', this.pants)
         saveData("Pants", this.pants);
     }
 }
 
 function saveData(name, data) {
-    fetch('/flask/save_data', {
-	method: 'POST',
-	headers: {
-	    'Content-Type': 'application/json',
-	},
-	body: JSON.stringify({name: name,
-			      data: data})
+    fetch('flask/save_data', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({name: name, data: data})
     }).catch(console.error);
 }
 
 async function loadData(name) {
 
-    let response = await fetch('/flask/load_data', {
-	method: 'POST',
-	headers: {
-	    'Content-Type': 'application/json',
-	},
-	body: JSON.stringify({name: name})
-    });
+    let response = await fetch('flask/load_data', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({name: name})
+    }).catch(console.error);
 
-    if (response.ok) {
-	return await response.json();
-    }
+    if (response.ok)
+	    return await response.json();
 }

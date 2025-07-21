@@ -8,17 +8,36 @@ services:
       - /etc/timezone:/etc/timezone:ro
     networks:
       - clothing
+    env_file:
+      - .env
+    depends_on:
+      - nginx
+      - redis
   nginx:
     image: nginx:latest
     restart: always
     volumes:
       - ./nginx/templates:/etc/nginx/templates:ro
-      - ./html:/var/www/html:ro
+      - ./html:/var/www/html
     ports:
       - 8256:8080
+    networks:
+      - clothing
+  redis:
+    image: redis:6.2-alpine
+    restart: always
+    command: redis-server --save 60 1 --requirepass ${REDIS_PASSWORD}
+    volumes: 
+      - redis:/data
+    env_file:
+      - .env
     networks:
       - clothing
 
 networks:
   clothing:
     driver: bridge
+
+volumes:
+  redis:
+    driver: local
