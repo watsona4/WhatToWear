@@ -1,4 +1,5 @@
 import { ClothingSelector, saveData, loadData } from "./modules/clothing_selector.js";
+import icons from "./weather_icons_custom.json" with { type: "json" };
 
 function generate()
 {
@@ -18,33 +19,54 @@ function update()
 
 function getUrl()
 {
-    let greenwichUrl = {
-        current: "https://api.weather.gov/stations/KGFL/observations/latest",
-        forecast: "https://api.weather.gov/gridpoints/ALY/77,84/forecast",
+    let greenwich = {
+        latitude: "43.0917827",
+        longitude: "-73.4985877",
     };
-    let schenectadyUrl = {
-        current: "https://api.weather.gov/stations/KALB/observations/latest",
-        forecast: "https://api.weather.gov/gridpoints/ALY/65,69/forecast",
+    let schenectady = {
+        latitude: "42.8127319",
+        longitude: "-73.9377329",
     };
-    let houstonUrl = {
-        current: "https://api.weather.gov/stations/KSGR/observations/latest",
-        forecast: "https://api.weather.gov/gridpoints/HGX/56,93/forecast",
+    let houston = {
+        latitude: "29.669227",
+        longitude: "-95.594398",
     };
-    let columbusUrl = {
-        current: "https://api.weather.gov/stations/K66R/observations/latest",
-        forecast: "https://api.weather.gov/gridpoints/HGX/17,91/forecast",
+    let columbus = {
+        latitude: "29.635357",
+        longitude: "-96.630387",
     };
+
+    let latlon = null;
 
     switch ($("#location").find("a.active").text()) {
     case "Greenwich":
-        return greenwichUrl;
+        latlon = greenwich;
+        break;
     case "Schenectady":
-        return schenectadyUrl;
+        latlon = schenectady;
+        break;
     case "Houston":
-        return houstonUrl;
+        latlon = houston;
+        break;
     case "Columbus":
-        return columbusUrl;
+        latlon = columbus;
+        break;
     }
+
+    let url = new URL("https://api.open-meteo.com/v1/forecast");
+
+    url.searchParams.append("latitude", latlon.latitude);
+    url.searchParams.append("longitude", latlon.longitude);
+
+    url.searchParams.append("daily", "temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset");
+    url.searchParams.append("current", "temperature_2m,apparent_temperature,weather_code");
+    url.searchParams.append("timezone", "auto");
+    url.searchParams.append("forecast_days", "1");
+    url.searchParams.append("wind_speed_unit", "mph");
+    url.searchParams.append("temperature_unit", "fahrenheit");
+    url.searchParams.append("precipitation_unit", "inch");
+
+    return url.toString();
 }
 
 function convertTemp(units, temp)
@@ -56,53 +78,38 @@ function convertTemp(units, temp)
 
 function getWeatherData(url)
 {
-    $.getJSON(url.current, data => {
+    $.getJSON(url, data => {
 
-        let current = data.properties;
+        let current = data.current;
+        let daily = data.daily;
 
-        let temperature = current.temperature.value;
-        let units = current.temperature.unitCode;
-        temperature = convertTemp(units, temperature);
+        let temperature = current.temperature_2m;
         $("#temp").attr("value", temperature).html(
             "Temp: " + temperature.toFixed(1) + " &deg;F");
 
-        let feelslike = current.heatIndex.value;
-        units = current.heatIndex.unitCode;
-        if (feelslike == null) {
-            feelslike = current.windChill.value;
-            units = current.windChill.unitCode;
-            if (feelslike == null)
-                feelslike = temperature;
-            else
-                feelslike = convertTemp(units, feelslike);
-        }
-        else {
-            feelslike = convertTemp(units, feelslike);
-        }
+        let feelslike = current.apparent_temperature;
 
         $("#feels").html("Feels like " + feelslike.toFixed(0) + " &deg;F");
 
-        $("#image").attr("src", current.icon);
+        let day_night = "night";
+        let time = new Date(current.time);
+        let sunrise = new Date(daily.sunrise[0]);
+        let sunset = new Date(daily.sunset[0]);
+
+        if (time.getTime() > sunrise.getTime() && time.getTime() < sunset.getTime())
+            day_night = "day";
+
+        $("#image").attr("src", "js/icons/" + icons[current.weather_code][day_night].icon);
 
         getClothing();
-     });
 
-    $.getJSON(url.forecast, data => {
-
-        let forecast = data.properties;
-
-        let high, low;
-        for (let i = 0; i < 2; ++i) {
-            if (forecast.periods[i].isDaytime)
-                high = forecast.periods[i].temperature;
-            else
-                low = forecast.periods[i].temperature;
-        }
+        let high = daily.temperature_2m_max[0];
+        let low = daily.temperature_2m_min[0];
 
         $("#hilo").html("High: " + high.toFixed(0) + " &deg;F, " +
                         "Low: " + low.toFixed(0) + " &deg;F");
 
-        forecast = forecast.periods[0].detailedForecast;
+        let forecast = icons[daily.weather_code[0]].day.description;
 
         $("#fcst").html(forecast);
     });
