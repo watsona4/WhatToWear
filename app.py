@@ -1,14 +1,8 @@
+
 import logging
-import os
-import os.path
-
-import cachelib  # type: ignore
-from flask import Flask, jsonify, request
+from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
-
-CACHE = cachelib.RedisCache(
-    host="redis", port=6379, db=0, password=os.environ.get("REDIS_PASSWORD")
-)
+from routes.api import api_bp
 
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)  # type: ignore
@@ -16,31 +10,13 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1) 
 logging.basicConfig(level=logging.DEBUG)
 LOG = logging.getLogger(__name__)
 
-
-@app.post("/save_data")
-def save_data():
-    LOG.debug(f"save_data(): {request=}")
-    data = request.get_json()
-    LOG.debug(f"save_data(): {data=}")
-    CACHE.add(data["name"], data["data"])
-    return "OK", 200
-
-
-@app.post("/load_data")
-def load_data():
-    LOG.debug(f"load_data(): {request=}")
-    data = request.get_json()
-    LOG.debug(f"load_data(): {data=}")
-    val = CACHE.get(data["name"])
-    LOG.debug(f"load_data(): {val=}")
-    return jsonify(val)
-
+# Register Blueprints
+app.register_blueprint(api_bp, url_prefix="/api")
 
 @app.get("/health")
 def health():
-    LOG.debug(f"health(): {request=}")
+    LOG.debug(f"health(): health check endpoint hit")
     return "OK", 200
-
 
 if __name__ == "__main__":
     app.run(debug=True)
