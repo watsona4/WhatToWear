@@ -29,7 +29,7 @@ class ClothingSelector {
                 "charcoal",
                 "tan"];
 
-        this.pantss = ["khaki",
+        this.pantss = [//"khaki",
                         "tan",
                         "grey",
                         "jeans"];
