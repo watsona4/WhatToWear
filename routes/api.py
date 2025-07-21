@@ -2,20 +2,24 @@
 import os
 import logging
 import cachelib  # type: ignore
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 
 LOG = logging.getLogger(__name__)
-LOG.setLevel(logging.DEBUG)
-handler = logging.StreamHandler()
-formatter = logging.Formatter('[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
-handler.setFormatter(formatter)
-LOG.addHandler(handler)
-
 CACHE = cachelib.RedisCache(
     host="redis", port=6379, db=0, password=os.environ.get("REDIS_PASSWORD")
 )
 
 api_bp = Blueprint("api", __name__)
+
+API_KEY = os.environ.get("API_KEY")
+
+@api_bp.before_request
+def check_api_key():
+    if API_KEY:
+        req_key = request.headers.get("X-API-KEY")
+        if req_key != API_KEY:
+            LOG.warning("Unauthorized access attempt.")
+            return jsonify({"error": "Unauthorized"}), 401
 
 @api_bp.post("/save_data")
 def save_data():

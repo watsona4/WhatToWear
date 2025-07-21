@@ -1,6 +1,18 @@
 import { ClothingSelector, saveData, loadData } from "./modules/clothing_selector.js";
 import icons from "./weather_icons_custom.json" with { type: "json" };
 
+// Load API key from .env-equivalent meta tag
+const API_KEY = document.querySelector('meta[name="api-key"]').getAttribute('content');
+
+function fetchWithAuth(url, options = {}) {
+    options.headers = {
+        ...(options.headers || {}),
+        "X-API-KEY": API_KEY,
+        "Content-Type": "application/json"
+    };
+    return fetch(url, options);
+}
+
 function generate()
 {
     let clothing = getClothing();
