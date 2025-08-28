@@ -1,9 +1,12 @@
 # Drop-in Flask blueprint
-import os, logging
-from flask import Blueprint, request, jsonify
+import logging
+import os
+
 import redis  # type: ignore
-from .rules_engine import LazyConfig, evaluate_rules, choose_outfit, WearHistory
-from .providers import OpenMeteoProvider
+from flask import Blueprint, jsonify, request
+from providers.open_meteo import OpenMeteoProvider
+
+from .rules_engine import LazyConfig, WearHistory, choose_outfit, evaluate_rules
 
 LOG = logging.getLogger(__name__)
 api2_bp = Blueprint("api2", __name__)
@@ -14,6 +17,7 @@ CFG = LazyConfig({
 })
 REDIS_URL = os.environ.get("REDIS_URL", "redis://redis:6379/0")
 REDIS = redis.from_url(REDIS_URL) if REDIS_URL else None
+
 
 @api2_bp.route("/v2/suggest", methods=["GET"])
 def suggest():
@@ -35,9 +39,11 @@ def suggest():
     }
     rules_cfg, outfits = CFG.rules(), CFG.outfits()
     effects = evaluate_rules(rules_cfg, ctx)
-    hist = WearHistory(backend=rules_cfg.get("history",{}).get("backend","json"),
-                       json_path=rules_cfg.get("history",{}).get("json_path","./data/wear_history.json"),
-                       redis=REDIS)
+    hist = WearHistory(
+        backend=rules_cfg.get("history", {}).get("backend", "json"),
+        json_path=rules_cfg.get("history", {}).get("json_path", "./data/wear_history.json"),
+        redis=REDIS,
+    )
     pick = choose_outfit(outfits, effects["tags"], ctx, hist, rules_cfg)
     return jsonify({
         "weather": weather,
@@ -45,14 +51,17 @@ def suggest():
         "outfit": {"id": pick.id, "name": pick.name, "tags": pick.tags, "pieces": pick.pieces},
     })
 
+
 @api2_bp.route("/v2/history", methods=["POST"])
 def record():
     body = request.get_json(force=True)
     outfit_id = body.get("outfit_id")
     date = body.get("date")
     rules_cfg = CFG.rules()
-    hist = WearHistory(backend=rules_cfg.get("history",{}).get("backend","json"),
-                       json_path=rules_cfg.get("history",{}).get("json_path","./data/wear_history.json"),
-                       redis=REDIS)
+    hist = WearHistory(
+        backend=rules_cfg.get("history", {}).get("backend", "json"),
+        json_path=rules_cfg.get("history", {}).get("json_path", "./data/wear_history.json"),
+        redis=REDIS,
+    )
     hist.record(outfit_id, date=date)
     return jsonify({"ok": True})

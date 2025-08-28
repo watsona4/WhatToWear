@@ -1,7 +1,8 @@
 import logging
-from typing import Dict, Any
+from typing import Any, Dict
 
 LOG = logging.getLogger(__name__)
+
 
 class WeatherProvider:
     def __init__(self, lat: float, lon: float, tz: str = "America/New_York"):

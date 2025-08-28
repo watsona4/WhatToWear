@@ -1,8 +1,8 @@
-
-import os
 import logging
+import os
+
 import cachelib  # type: ignore
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, jsonify, request
 
 LOG = logging.getLogger(__name__)
 CACHE = cachelib.RedisCache(
@@ -13,6 +13,7 @@ api_bp = Blueprint("api", __name__)
 
 API_KEY = os.environ.get("API_KEY")
 
+
 @api_bp.before_request
 def check_api_key():
     if API_KEY:
@@ -20,6 +21,7 @@ def check_api_key():
         if req_key != API_KEY:
             LOG.warning("Unauthorized access attempt.")
             return jsonify({"error": "Unauthorized"}), 401
+
 
 @api_bp.post("/save_data")
 def save_data():
@@ -40,6 +42,7 @@ def save_data():
     except Exception as e:
         LOG.exception("Failed to save data")
         return jsonify({"error": str(e)}), 500
+
 
 @api_bp.post("/load_data")
 def load_data():
