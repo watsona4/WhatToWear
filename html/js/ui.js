@@ -13,10 +13,11 @@ const API = {
     const r = await fetch(`./api/v2/availability`);
     const txt = await r.text();
     if (!r.ok) {
-      throw new Error(`availability ${r.status}: ${txt.slice(0,200)}`);
+      throw new Error(`availability ${r.status}: ${txt.slice(0, 200)}`);
     }
-    try { return JSON.parse(txt); }
-    catch (e) {
+    try {
+      return JSON.parse(txt);
+    } catch (e) {
       console.error("availability non-JSON response:", txt);
       throw e;
     }
@@ -33,9 +34,9 @@ const API = {
       return body;
     }),
   resetLastWorn: async () => {
-    const r = await fetch(`./api/v2/reset_last_worn`, { method: 'POST' });
+    const r = await fetch(`./api/v2/reset_last_worn`, { method: "POST" });
     const txt = await r.text();
-    if (!r.ok) throw new Error(`reset ${r.status}: ${txt.slice(0,200)}`);
+    if (!r.ok) throw new Error(`reset ${r.status}: ${txt.slice(0, 200)}`);
     return JSON.parse(txt);
   },
 };
@@ -46,7 +47,7 @@ async function geolocate() {
     navigator.geolocation.getCurrentPosition(
       (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
       (err) => reject(err),
-      { enableHighAccuracy: true, timeout: 8000 }
+      { enableHighAccuracy: true, timeout: 8000 },
     );
   });
 }
@@ -54,25 +55,23 @@ async function geolocate() {
 function renderWeather(weather) {
   const d = weather.daily;
   document.querySelector("#weather").innerHTML = `High ${d.high_f.toFixed(
-    0
+    0,
   )}°F, Low ${d.low_f.toFixed(0)}°F; UV max ${d.uv_index_max?.toFixed(
-    0
+    0,
   )}; Precip ${(d.precip_prob_max * 100 || 0).toFixed(0)}%`;
 }
 
 function renderEffects(effects) {
-  document.querySelector(
-    "#effects"
-  ).innerHTML = `<div class="small">Tags: <code>${
-    effects.tags.join(", ") || "none"
-  }</code> | Notes: ${effects.notes.join("; ") || "none"}</div>`;
+  document.querySelector("#effects").innerHTML =
+    `<div class="small">Tags: <code>${
+      effects.tags.join(", ") || "none"
+    }</code> | Notes: ${effects.notes.join("; ") || "none"}</div>`;
 }
 
 function renderOutfit(outfit) {
   const pieces = outfit.pieces.map((p) => Object.values(p)[0]).join(", ");
-  document.querySelector(
-    "#outfit"
-  ).innerHTML = `<div class="fw-semibold">${outfit.name}</div><div class="small text-muted">${pieces}</div>`;
+  document.querySelector("#outfit").innerHTML =
+    `<div class="fw-semibold">${outfit.name}</div><div class="small text-muted">${pieces}</div>`;
 }
 
 function constraintPass(constraints, ctx) {
@@ -112,7 +111,7 @@ function rowTemplate(item) {
       <select class="form-select form-select-sm type">
         ${["top", "bottom", "outer", "accessory", "shoes"]
           .map(
-            (t) => `<option ${item.type === t ? "selected" : ""}>${t}</option>`
+            (t) => `<option ${item.type === t ? "selected" : ""}>${t}</option>`,
           )
           .join("")}
       </select>
@@ -182,16 +181,16 @@ function chooseShoes(items) {
 
 function generateCombos(items, ctx) {
   const tops = items.filter(
-    (i) => i.type === "top" && constraintPass(i.constraints || [], ctx)
+    (i) => i.type === "top" && constraintPass(i.constraints || [], ctx),
   );
   const bottoms = items.filter(
-    (i) => i.type === "bottom" && constraintPass(i.constraints || [], ctx)
+    (i) => i.type === "bottom" && constraintPass(i.constraints || [], ctx),
   );
   const outers = items.filter(
-    (i) => i.type === "outer" && constraintPass(i.constraints || [], ctx)
+    (i) => i.type === "outer" && constraintPass(i.constraints || [], ctx),
   );
   const accessories = items.filter(
-    (i) => i.type === "accessory" && constraintPass(i.constraints || [], ctx)
+    (i) => i.type === "accessory" && constraintPass(i.constraints || [], ctx),
   );
   const shoes = chooseShoes(items);
 
@@ -201,12 +200,12 @@ function generateCombos(items, ctx) {
       const base = { top: t.name, bottom: b.name, shoes };
       // include at most one outer that matches any effect tag, otherwise none
       const o = outers.find((o) =>
-        (o.tags || []).some((tag) => (ctx.tags || []).includes(tag))
+        (o.tags || []).some((tag) => (ctx.tags || []).includes(tag)),
       );
       // include up to two accessories matching tags
       const acc = accessories
         .filter((a) =>
-          (a.tags || []).some((tag) => (ctx.tags || []).includes(tag))
+          (a.tags || []).some((tag) => (ctx.tags || []).includes(tag)),
         )
         .slice(0, 2);
 
@@ -327,7 +326,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         await refreshSuggest();
       } catch (e) {
         alert(
-          "Unable to get your location. You can still enter lat/lon manually."
+          "Unable to get your location. You can still enter lat/lon manually.",
         );
       }
     });
@@ -373,7 +372,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       renderCombos(generateCombos(closet, ctx));
       // brief visual confirmation
       card.classList.add("border-success");
-      setTimeout(()=> card.classList.remove("border-success","opacity-50"), 600);
+      setTimeout(
+        () => card.classList.remove("border-success", "opacity-50"),
+        600,
+      );
     } catch (err) {
       console.error(err);
       alert(`Could not save selection: ${err.message || err}`);
@@ -429,10 +431,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 function renderRecentWorn(lastMap) {
   const el = document.querySelector("#recent-worn");
   if (!el) return;
-  const entries = Object.entries(lastMap || {}).filter(([,d]) => !!d);
-  if (!entries.length) { el.textContent = "No wear data yet."; return; }
+  const entries = Object.entries(lastMap || {}).filter(([, d]) => !!d);
+  if (!entries.length) {
+    el.textContent = "No wear data yet.";
+    return;
+  }
   // sort by date desc
-  entries.sort((a,b) => (a[1] < b[1] ? 1 : -1));
+  entries.sort((a, b) => (a[1] < b[1] ? 1 : -1));
   const top = entries.slice(0, 12); // show up to 12
-  el.innerHTML = top.map(([name, d]) => `<span class="me-3"><code>${d}</code> — ${name}</span>`).join("");
+  el.innerHTML = top
+    .map(([name, d]) => `<span class="me-3"><code>${d}</code> — ${name}</span>`)
+    .join("");
 }
