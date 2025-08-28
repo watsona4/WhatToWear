@@ -39,6 +39,12 @@ const API = {
     if (!r.ok) throw new Error(`reset ${r.status}: ${txt.slice(0, 200)}`);
     return JSON.parse(txt);
   },
+  history: async (days = 14) => {
+    const r = await fetch(`./api/v2/history?days=${days}`);
+    const txt = await r.text();
+    if (!r.ok) throw new Error(`history ${r.status}: ${txt.slice(0,200)}`);
+    return JSON.parse(txt);
+  },
 };
 
 async function geolocate() {
@@ -303,7 +309,14 @@ async function refreshSuggest() {
     window._availability = avail.availability || {};
     window._availabilityToday = avail.today;
     window._lastWorn = avail.last_worn || {};
-    renderRecentWorn(window._lastWorn);
+    // in addition to last_worn map, load daily history to render the table
+    try {
+      const hist = await API.history(21); // ~3 weeks
+      renderRecentWornTable(hist.days || []);
+    } catch (e) {
+      console.warn("history failed", e);
+      renderRecentWorn(window._lastWorn); // fallback simple list
+    }
   } catch (e) {
     console.warn("availability failed", e);
   }
@@ -366,7 +379,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       window._availability = avail.availability || {};
       window._availabilityToday = avail.today;
       window._lastWorn = avail.last_worn || {};
-      renderRecentWorn(window._lastWorn);
+      try {
+        const hist = await API.history(21);
+        renderRecentWornTable(hist.days || []);
+      } catch (e) {
+        console.warn("history failed", e);
+        renderRecentWorn(window._lastWorn);
+      }
       const closet = readCloset();
       const ctx = window._effectsCtx || {};
       renderCombos(generateCombos(closet, ctx));
@@ -411,7 +430,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         window._availability = avail.availability || {};
         window._availabilityToday = avail.today;
         window._lastWorn = avail.last_worn || {};
-        renderRecentWorn(window._lastWorn);
+        renderRecentWornTable([]);
         const closet = readCloset();
         const ctx = window._effectsCtx || {};
         renderCombos(generateCombos(closet, ctx));
@@ -442,4 +461,32 @@ function renderRecentWorn(lastMap) {
   el.innerHTML = top
     .map(([name, d]) => `<span class="me-3"><code>${d}</code> — ${name}</span>`)
     .join("");
+}
+
+// Modern table by day: [{date, items:[...]}]
+function renderRecentWornTable(days) {
+  const txt = document.querySelector("#recent-worn");
+  const tbody = document.querySelector("#recent-worn-table tbody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  if (!Array.isArray(days) || days.length === 0) {
+    if (txt) txt.textContent = "No wear data yet.";
+    return;
+  }
+  if (txt) txt.textContent = "";
+  days.forEach(({date, items}) => {
+    const tr = document.createElement("tr");
+    const tdDate = document.createElement("td");
+    tdDate.className = "date-cell";
+    tdDate.innerHTML = `<span class="fw-semibold">${date}</span>`;
+    const tdItems = document.createElement("td");
+    tdItems.innerHTML = (items || []).map(n => `<span class="item-badge me-2 mb-1">${escapeHtml(n)}</span>`).join("");
+    tr.appendChild(tdDate);
+    tr.appendChild(tdItems);
+    tbody.appendChild(tr);
+  });
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }

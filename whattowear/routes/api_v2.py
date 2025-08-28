@@ -79,6 +79,11 @@ def _lw_key(name: str) -> str:
     return f"wtw:last_worn:{name}"
 
 
+def _wear_key(d: date | str) -> str:
+    iso = d if isinstance(d, str) else d.isoformat()
+    return f"wtw:wear:{iso}"
+
+
 @api2_bp.route("/v2/suggest", methods=["GET"])
 def suggest():
     lat = float(request.args.get("lat", os.environ.get("LAT", "42.6526")))
@@ -207,6 +212,11 @@ def save_selection():
     for name in items:
         pipe.set(_lw_key(str(name)), iso)
     pipe.execute()
+    # also store the day's outfit as a single JSON array (latest wins)
+    try:
+        REDIS.set(_wear_key(iso), json.dumps(list(items)))
+    except Exception as e:
+        LOG.warning("failed to write wear history for %s: %s", iso, e)
     return jsonify({"ok": True, "worn_on": iso, "count": len(items)})
 
 
@@ -224,3 +234,33 @@ def reset_last_worn():
     res = pipe.execute()
     deleted = sum(1 for x in res if isinstance(x, int) and x > 0)
     return jsonify({"ok": True, "deleted": deleted})
+
+
+@api2_bp.route("/v2/history", methods=["GET"])
+def history():
+    """Return recent day->outfit (items) history.
+    Query: ?days=14 (default)
+    Response: { "days": [{"date":"YYYY-MM-DD","items":[...]}] }
+    """
+    days = 14
+    try:
+        if request.args.get("days"):
+            days = max(1, min(90, int(request.args["days"])))
+    except Exception:
+        pass
+    today = _today_local()
+    out = []
+    if REDIS is None:
+        return jsonify({"days": out})
+    for i in range(days):
+        d = today - timedelta(days=i)
+        try:
+            raw = REDIS.get(_wear_key(d))
+            if raw:
+                items = json.loads(raw)
+                out.append({"date": d.isoformat(), "items": items})
+        except Exception as e:
+            LOG.warning("history read failed for %s: %s", d, e)
+    # newest first
+    out.sort(key=lambda x: x["date"], reverse=True)
+    return jsonify({"days": out})
