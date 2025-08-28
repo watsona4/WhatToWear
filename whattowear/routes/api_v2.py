@@ -1,4 +1,5 @@
 import json
+from json import JSONDecodeError
 import logging
 import os
 from datetime import date, datetime, timedelta
@@ -16,9 +17,11 @@ CFG = LazyConfig({
     "outfits": os.environ.get("OUTFITS_PATH", "./config/outfits.yaml"),
     "rules": os.environ.get("RULES_PATH", "./config/rules.yaml"),
 })
-REDIS_URL = os.environ.get("REDIS_URL", "redis://redis:6379/0")
-REDIS = redis.from_url(REDIS_URL) if REDIS_URL else None
 
+pwd  = os.environ.get("REDIS_PASSWORD", "")
+host = os.environ.get("REDIS_HOST", "redis")
+REDIS_URL = os.environ.get("REDIS_URL") or (f"redis://:{pwd}@{host}:6379/0" if pwd else f"redis://{host}:6379/0")
+REDIS = redis.from_url(REDIS_URL, decode_responses=True) if REDIS_URL else None
 
 # ---------- availability helpers ----------
 def _today_local() -> date:
@@ -41,7 +44,8 @@ def _closet_items():
             if name and typ:
                 out.append({"name": name, "type": typ})
         return out
-    except FileNotFoundError:
+    except (FileNotFoundError, JSONDecodeError, OSError, ValueError) as e:
+        LOG.warning("closet.json load problem: %s", e)
         return []
 
 
@@ -126,16 +130,21 @@ def availability():
     """Return next-available date (ISO) for each closet item based on last worn + type."""
     items = _closet_items()
     names = [i["name"] for i in items]
+    today_iso = _today_local().isoformat()
     if not names:
-        return jsonify({"availability": {}, "today": _today_local().isoformat()})
+        return jsonify({"availability": {}, "today": today_iso})
 
     if REDIS is None:
         # No Redis configured: treat all items as available today
-        today = _today_local().isoformat()
-        return jsonify({"availability": {n: today for n in names}, "today": today})
+        return jsonify({"availability": {n: today_iso for n in names}, "today": today_iso, "warning": "redis_not_configured"})
 
     # bulk fetch last worn
-    vals = REDIS.mget([_lw_key(n) for n in names])
+    try:
+        vals = REDIS.mget([_lw_key(n) for n in names])
+    except Exception as e:
+        LOG.warning("redis error during availability: %s", e)
+        # Treat as available today rather than 500
+        return jsonify({"availability": {n: today_iso for n in names}, "today": today_iso, "warning": "redis_unavailable"})
     name_to_last: dict[str, date | None] = {}
     for n, v in zip(names, vals):
         if not v:
@@ -154,7 +163,7 @@ def availability():
         lw = name_to_last.get(n)
         avail[n] = _available_on_for(t, lw).isoformat()
 
-    return jsonify({"availability": avail, "today": _today_local().isoformat()})
+    return jsonify({"availability": avail, "today": today_iso})
 
 
 @api2_bp.route("/v2/selection", methods=["POST"])

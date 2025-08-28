@@ -12,8 +12,9 @@ services:
       - .env
     environment:
       - WTW_URL_PREFIX=/wtw
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
     ports:
-      - "127.0.0.1:8256:8256"   # <— publish to loopback only
+      - "127.0.0.1:8256:8256"
     depends_on:
       redis:
         condition: service_healthy
