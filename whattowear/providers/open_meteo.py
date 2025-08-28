@@ -1,18 +1,7 @@
-import logging
-from typing import Dict, Any
-
 import requests  # type: ignore
 
-LOG = logging.getLogger(__name__)
-
-class WeatherProvider:
-    def __init__(self, lat: float, lon: float, tz: str = "America/New_York"):
-        self.lat = lat
-        self.lon = lon
-        self.tz = tz
-
-    def fetch(self) -> Dict[str, Any]:
-        raise NotImplementedError
+from typing import Dict, Any
+from . import WeatherProvider
 
 class OpenMeteoProvider(WeatherProvider):
     BASE = "https://api.open-meteo.com/v1/forecast"
