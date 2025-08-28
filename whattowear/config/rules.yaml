@@ -1,0 +1,36 @@
+units: imperial
+rule_sets:
+  - id: core_conditions
+    continue: true
+    rules:
+      - when: {max_temp_f: 35}
+        add_tags: [cold]
+        add_items: [winter_parka]
+        note: "Very cold, include insulated layers."
+      - when: {min_precip_prob: 0.6}
+        add_tags: [rain-ready]
+        add_items: [rain_shell]
+        note: "Likely rain, add shell."
+      - when: {min_uv_index: 8}
+        add_tags: [sun-safe]
+        add_items: [sun_hat]
+        note: "High UV, add sun protection."
+      - when: {min_wind_mph: 25}
+        add_tags: [windproof]
+        note: "Windy, prefer windproof outer layer."
+  - id: comfort_adjust
+    continue: true
+    rules:
+      - when: {min_apparent_f: 80}
+        temp_bias_f: +5
+        note: "Feels hot."
+      - when: {max_apparent_f: 45}
+        temp_bias_f: -5
+        note: "Feels cold."
+selection:
+  strategy: least_recent
+  tie_breaker: weighted_random
+  weights_by_tag: {business: 1.1, casual: 1.0}
+history:
+  backend: json
+  json_path: ./data/wear_history.json
