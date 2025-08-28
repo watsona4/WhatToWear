@@ -1,8 +1,8 @@
 const $ = (sel) => document.querySelector(sel);
 const API = {
-  suggest: async (lat, lon) => fetch(`/api/v2/suggest?lat=${lat}&lon=${lon}`).then(r=>r.json()),
-  getCloset: async () => fetch(`/api/v2/closet`).then(r=>r.json()),
-  saveCloset: async (items) => fetch(`/api/v2/closet`, {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({items})}).then(r=>r.json())
+  suggest: async (lat, lon) => fetch(`./api/v2/suggest?lat=${lat}&lon=${lon}`).then(r=>r.json()),
+  getCloset: async () => fetch(`./api/v2/closet`).then(r=>r.json()),
+  saveCloset: async (items) => fetch(`./api/v2/closet`, {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({items})}).then(r=>r.json())
 };
 
 async function geolocate() {

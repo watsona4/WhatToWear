@@ -1,23 +1,21 @@
-FROM python:3.12-alpine AS builder
+FROM python:3.12-slim
 
 WORKDIR /app
 
-COPY requirements.txt .
+COPY pyproject.toml ./
+COPY whattowear ./whattowear
+COPY html ./html
 
-RUN pip wheel --no-cache-dir --no-deps --wheel-dir /app/wheels -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip \
+ && pip install --no-cache-dir .
 
-FROM python:3.12-alpine
+COPY config ./config
 
-WORKDIR /app
+ENV WTW_URL_PREFIX=/wtw
+ENV PYTHONUNBUFFERED=1
 
-RUN apk add --no-cache curl
-
-COPY --from=builder /app/wheels /wheels
-
-RUN pip install --no-cache --break-system-packages /wheels/*
-
-COPY app.py .
+EXPOSE 8256
 
 LABEL org.opencontainers.image.source=https://github.com/watsona4/clothing
 
-CMD ["gunicorn", "--bind=0.0.0.0:8000", "--log-level=debug", "app:app"]
+CMD ["gunicorn", "--chdir=/app", "--bind=0.0.0.0:8256", "--log-level=debug", "whattowear:create_app()", "--workers=2", "--threads=4"]

@@ -4,7 +4,7 @@ import os
 
 import redis  # type: ignore
 from flask import Blueprint, jsonify, request
-from providers.open_meteo import OpenMeteoProvider
+from ..providers.open_meteo import OpenMeteoProvider
 
 from .rules_engine import LazyConfig, WearHistory, choose_outfit, evaluate_rules
 

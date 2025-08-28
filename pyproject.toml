@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "whattowear"
+version = "0.1.0"
+description = "Weather-aware outfit suggester app"
+requires-python = ">=3.10"
+dependencies = [
+  "flask>=2.3",
+  "werkzeug>=3.0",
+  "gunicorn>=21.2",
+  "requests>=2.32",
+  "pyyaml>=6.0",
+  "cachelib>=0.9",
+  "redis>=5.0"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["whattowear*"]
