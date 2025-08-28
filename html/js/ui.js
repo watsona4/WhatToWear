@@ -261,9 +261,12 @@ function renderCombos(combos) {
       ].filter(Boolean);
       const items = JSON.stringify(comboItems(c)).replace(/"/g, "&quot;");
       return `
-      <div class="combo-card p-2 border rounded mb-2" data-items="${items}">
-        <div>${parts.join(" + ")}</div>
-        <button class="btn btn-sm btn-primary mt-2 select-combo" type="button">Wear this</button>
+      <div class="combo-card p-2 border rounded mb-2"
+           role="button" tabindex="0"
+           data-items="${items}"
+           style="cursor:pointer; user-select:none;">
+        <div class="fw-semibold">${parts.join(" + ")}</div>
+        <div class="text-muted small">Tap to wear</div>
       </div>
     `;
     })
@@ -294,6 +297,8 @@ async function refreshSuggest() {
     const avail = await API.availability();
     window._availability = avail.availability || {};
     window._availabilityToday = avail.today;
+    window._lastWorn = avail.last_worn || {};
+    renderRecentWorn(window._lastWorn);
   } catch (e) {
     console.warn("availability failed", e);
   }
@@ -337,11 +342,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderCombos(combos);
   });
 
-  // Tap-to-select handler (event delegation)
+  // Tap-to-select: the entire combo card acts as the button
   document.addEventListener("click", async (e) => {
-    const btn = e.target.closest(".select-combo");
-    if (!btn) return;
-    const card = btn.closest(".combo-card");
+    const card = e.target.closest(".combo-card");
     if (!card) return;
     let items = [];
     try {
@@ -351,23 +354,24 @@ document.addEventListener("DOMContentLoaded", async () => {
       alert("Internal error: bad combo payload");
       return;
     }
-    btn.disabled = true;
-    const orig = btn.textContent;
-    btn.textContent = "Saving...";
+    card.classList.add("opacity-50");
     try {
       await API.saveSelection(items);
       const avail = await API.availability();
       window._availability = avail.availability || {};
       window._availabilityToday = avail.today;
+      window._lastWorn = avail.last_worn || {};
+      renderRecentWorn(window._lastWorn);
       const closet = readCloset();
       const ctx = window._effectsCtx || {};
       renderCombos(generateCombos(closet, ctx));
-      btn.textContent = "Saved ✅";
+      // brief visual confirmation
+      card.classList.add("border-success");
+      setTimeout(()=> card.classList.remove("border-success","opacity-50"), 600);
     } catch (err) {
       console.error(err);
       alert(`Could not save selection: ${err.message || err}`);
-      btn.textContent = orig;
-      btn.disabled = false;
+      card.classList.remove("opacity-50");
     }
   });
 
@@ -376,3 +380,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   } catch {}
   await loadCloset();
 });
+
+// --- Recently worn rendering ---
+function renderRecentWorn(lastMap) {
+  const el = document.querySelector("#recent-worn");
+  if (!el) return;
+  const entries = Object.entries(lastMap || {}).filter(([,d]) => !!d);
+  if (!entries.length) { el.textContent = "No wear data yet."; return; }
+  // sort by date desc
+  entries.sort((a,b) => (a[1] < b[1] ? 1 : -1));
+  const top = entries.slice(0, 12); // show up to 12
+  el.innerHTML = top.map(([name, d]) => `<span class="me-3"><code>${d}</code> — ${name}</span>`).join("");
+}

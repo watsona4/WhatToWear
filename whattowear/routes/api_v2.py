@@ -1,8 +1,8 @@
 import json
-from json import JSONDecodeError
 import logging
 import os
 from datetime import date, datetime, timedelta
+from json import JSONDecodeError
 
 import redis  # type: ignore
 from flask import Blueprint, jsonify, request
@@ -18,10 +18,13 @@ CFG = LazyConfig({
     "rules": os.environ.get("RULES_PATH", "./config/rules.yaml"),
 })
 
-pwd  = os.environ.get("REDIS_PASSWORD", "")
+pwd = os.environ.get("REDIS_PASSWORD", "")
 host = os.environ.get("REDIS_HOST", "redis")
-REDIS_URL = os.environ.get("REDIS_URL") or (f"redis://:{pwd}@{host}:6379/0" if pwd else f"redis://{host}:6379/0")
+REDIS_URL = os.environ.get("REDIS_URL") or (
+    f"redis://:{pwd}@{host}:6379/0" if pwd else f"redis://{host}:6379/0"
+)
 REDIS = redis.from_url(REDIS_URL, decode_responses=True) if REDIS_URL else None
+
 
 # ---------- availability helpers ----------
 def _today_local() -> date:
@@ -132,11 +135,16 @@ def availability():
     names = [i["name"] for i in items]
     today_iso = _today_local().isoformat()
     if not names:
-        return jsonify({"availability": {}, "today": today_iso})
+        return jsonify({"availability": {}, "today": today_iso, "last_worn": {}})
 
     if REDIS is None:
         # No Redis configured: treat all items as available today
-        return jsonify({"availability": {n: today_iso for n in names}, "today": today_iso, "warning": "redis_not_configured"})
+        return jsonify({
+            "availability": {n: today_iso for n in names},
+            "today": today_iso,
+            "last_worn": {},
+            "warning": "redis_not_configured",
+        })
 
     # bulk fetch last worn
     try:
@@ -144,7 +152,12 @@ def availability():
     except Exception as e:
         LOG.warning("redis error during availability: %s", e)
         # Treat as available today rather than 500
-        return jsonify({"availability": {n: today_iso for n in names}, "today": today_iso, "warning": "redis_unavailable"})
+        return jsonify({
+            "availability": {n: today_iso for n in names},
+            "today": today_iso,
+            "last_worn": {},
+            "warning": "redis_unavailable",
+        })
     name_to_last: dict[str, date | None] = {}
     for n, v in zip(names, vals):
         if not v:
@@ -155,15 +168,17 @@ def availability():
         except Exception:
             name_to_last[n] = None
 
-    # compute next available
+    # compute next available + surface last worn
     avail: dict[str, str] = {}
+    last_map: dict[str, str | None] = {}
     for it in items:
         n = it["name"]
         t = it["type"]
         lw = name_to_last.get(n)
+        last_map[n] = lw.isoformat() if lw else None
         avail[n] = _available_on_for(t, lw).isoformat()
 
-    return jsonify({"availability": avail, "today": today_iso})
+    return jsonify({"availability": avail, "today": today_iso, "last_worn": last_map})
 
 
 @api2_bp.route("/v2/selection", methods=["POST"])
