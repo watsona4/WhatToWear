@@ -64,6 +64,7 @@ function rowTemplate(item) {
     </td>
     <td><input class="form-control form-control-sm tags" value="${(item.tags||[]).join(", ")}" placeholder="rain-ready, business"></td>
     <td><input class="form-control form-control-sm constraints" value="${(item.constraints||[]).join(", ")}" placeholder="min_temp_f=50, max_wind_mph=25"></td>
+    <td><input class="form-control form-control-sm warmth" type="number" step="1" value="${(item.warmth_bonus_f ?? "")}" placeholder="e.g., 7"></td>
     <td class="text-end"><button class="btn btn-outline-danger btn-sm remove">✕</button></td>
   `;
   tr.querySelector(".remove").addEventListener("click", ()=> tr.remove());
@@ -83,7 +84,11 @@ function readCloset() {
     name: r.querySelector(".name").value.trim(),
     type: r.querySelector(".type").value,
     tags: r.querySelector(".tags").value.split(",").map(x=>x.trim()).filter(Boolean),
-    constraints: parseConstraints(r.querySelector(".constraints").value)
+    constraints: parseConstraints(r.querySelector(".constraints").value),
+    warmth_bonus_f: (() => {
+      const v = r.querySelector(".warmth").value.trim();
+      return v === "" ? undefined : Number(v);
+    })()
   })).filter(x => x.name);
 }
 
@@ -103,8 +108,26 @@ function generateCombos(items, ctx) {
   for (const t of tops) {
     for (const b of bottoms) {
       const base = {top:t.name, bottom:b.name, shoes};
+      // include at most one outer that matches any effect tag, otherwise none
       const o = outers.find(o => (o.tags||[]).some(tag => (ctx.tags||[]).includes(tag)));
+      // include up to two accessories matching tags
       const acc = accessories.filter(a => (a.tags||[]).some(tag => (ctx.tags||[]).includes(tag))).slice(0,2);
+
+      // ---- EFFECTIVE TEMPERATURE CALCULATION ----
+      const rawTemp = (ctx.temperature_f ?? ctx.max_temp_f ?? ctx.apparent_f ?? 0);
+      const warmthBonus = ((o && Number.isFinite(+o.warmth_bonus_f)) ? (+o.warmth_bonus_f) : 0);
+      const ctxEff = {
+        ...ctx,
+        temperature_f_eff: rawTemp + warmthBonus,
+        apparent_f_eff: (ctx.apparent_f ?? rawTemp) + warmthBonus
+      };
+
+      // Re-validate constraints against the effective temp for all chosen pieces
+      if (!constraintPass(t.constraints||[], ctxEff)) continue;
+      if (!constraintPass(b.constraints||[], ctxEff)) continue;
+      if (o && !constraintPass(o.constraints||[], ctxEff)) continue;
+      if (acc.some(a => !constraintPass(a.constraints||[], ctxEff))) continue;
+
       combos.push({
         ...base,
         ...(o ? {outer:o.name} : {}),
@@ -138,7 +161,9 @@ async function refreshSuggest() {
     max_temp_f: data.weather.daily.high_f,
     precip_prob: data.weather.daily.precip_prob_max,
     wind_mph: data.weather.daily.wind_mph_max,
-    uv_index: data.weather.daily.uv_index_max
+    uv_index: data.weather.daily.uv_index_max,
+    temperature_f: data.weather.current.temp_f,
+    apparent_f: data.weather.daily.high_f
   };
 }
 

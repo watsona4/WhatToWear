@@ -49,15 +49,30 @@ class LazyConfig:
         return self.cache.get("rules", {})
 
 
+def _metric(ctx: Dict[str, Any], name: str):
+    """
+    Return a metric from context, honoring effective values if provided.
+    - temperature_f -> temperature_f_eff (fallback to temperature_f)
+    - apparent_f    -> apparent_f_eff (fallback to apparent_f)
+    """
+    if name == "temperature_f":
+        return ctx.get("temperature_f_eff", ctx.get("temperature_f"))
+    if name == "apparent_f":
+        return ctx.get("apparent_f_eff", ctx.get("apparent_f"))
+    return ctx.get(name)
+
+
 def matches_requires(req: Dict[str, Any], ctx: Dict[str, Any]) -> bool:
     for k, v in req.items():
         if k.startswith("min_"):
             metric = k[4:]
-            if ctx.get(metric) is None or ctx[metric] < v:
+            val = _metric(ctx, metric)
+            if val is None or val < v:
                 return False
         elif k.startswith("max_"):
             metric = k[4:]
-            if ctx.get(metric) is None or ctx[metric] > v:
+            val = _metric(ctx, metric)
+            if val is None or val > v:
                 return False
     return True
 

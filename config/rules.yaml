@@ -1,36 +1,92 @@
+# config/rules.yaml
+# Generalized comfort bands + condition modifiers
+# Units are Fahrenheit; engine will apply temperature_f_eff if available.
+
 units: imperial
+
 rule_sets:
-  - id: core_conditions
+
+  # ===== THERMAL BANDS (base layers) =====
+  # Interprets today's *effective* temperature into broad outfit building blocks.
+  - id: thermal_bands
     continue: true
     rules:
-      - when: {max_temp_f: 35}
-        add_tags: [cold]
-        add_items: [winter_parka]
-        note: "Very cold, include insulated layers."
-      - when: {min_precip_prob: 0.6}
-        add_tags: [rain-ready]
-        add_items: [rain_shell]
-        note: "Likely rain, add shell."
-      - when: {min_uv_index: 8}
-        add_tags: [sun-safe]
-        add_items: [sun_hat]
-        note: "High UV, add sun protection."
-      - when: {min_wind_mph: 25}
+      # ≤ 20°F — very cold
+      - when: { max_temperature_f: 20 }
+        add_tags: [pants, long_sleeves, sweater, coat, hat, gloves, boots]
+        note: "≤ 20°F: heavy layering"
+      # 21–40°F — cold
+      - when: { min_temperature_f: 21, max_temperature_f: 40 }
+        add_tags: [pants, long_sleeves, sweater, coat, hat, gloves]
+        note: "21–40°F: sweater + coat"
+      # 41–55°F — cool
+      - when: { min_temperature_f: 41, max_temperature_f: 55 }
+        add_tags: [pants, long_sleeves, light_jacket]
+        note: "41–55°F: light jacket"
+      # 56–68°F — mild
+      - when: { min_temperature_f: 56, max_temperature_f: 68 }
+        add_tags: [pants, long_sleeves]
+        note: "56–68°F: long sleeves"
+      # 69–78°F — warm
+      - when: { min_temperature_f: 69, max_temperature_f: 78 }
+        add_tags: [pants, short_sleeves]
+        note: "69–78°F: short sleeves"
+      # ≥ 79°F — hot
+      - when: { min_temperature_f: 79 }
+        add_tags: [shorts, short_sleeves, sandals_ok]
+        note: "≥ 79°F: summer mode"
+
+  # ===== WORK vs NON-WORK ADJUSTMENTS =====
+  # Keeps work outfits a bit more formal and conservative.
+  - id: work_nonwork
+    continue: true
+    rules:
+      # Work day: prefer pants; delay shorts; allow sports coat/sweater to fine-tune warmth via warmth_bonus_f.
+      - when: { min_is_work: 1, max_temperature_f: 78 }
+        add_tags: [business_ok, prefer_pants]
+        note: "Work ≤ 78°F: keep pants, business_ok"
+
+      # Non-work: allow shorts from 68°F+
+      - when: { max_is_work: 0, min_temperature_f: 68 }
+        add_tags: [shorts_ok]
+        note: "Non-work ≥ 68°F: shorts_ok"
+
+  # ===== WEATHER MODIFIERS =====
+  # These help accessories/outerwear selection without hard-coding exact items.
+  - id: condition_modifiers
+    continue: true
+    rules:
+      # Rain/Snow — choose waterproof outer & footwear
+      - when: { min_precip_prob: 0.4 }      # ≥ 40% chance
+        add_tags: [rain_ready, waterproof, hood_ok]
+        note: "Wet: prefer rain-ready layers"
+
+      # Windy — add wind layer
+      - when: { min_wind_mph: 20 }
         add_tags: [windproof]
-        note: "Windy, prefer windproof outer layer."
-  - id: comfort_adjust
+        note: "Windy: windproof outer"
+
+      # High UV — prefer sun coverage or hat
+      - when: { min_uv_index: 6 }
+        add_tags: [sun_safe, hat_ok]
+        note: "High UV: sun-safe + hat_ok"
+
+      # Cold & wet combo — upgrade insulation/boots
+      - when: { max_temperature_f: 40, min_precip_prob: 0.3 }
+        add_tags: [insulation_plus, boots]
+        note: "Cold + wet: insulation_plus + boots"
+
+  # ===== EDGE / TRANSITION NUDGES (optional) =====
+  # Nudge around band edges so suggestions feel natural.
+  - id: edge_nudges
     continue: true
     rules:
-      - when: {min_apparent_f: 80}
-        temp_bias_f: +5
-        note: "Feels hot."
-      - when: {max_apparent_f: 45}
-        temp_bias_f: -5
-        note: "Feels cold."
-selection:
-  strategy: least_recent
-  tie_breaker: weighted_random
-  weights_by_tag: {business: 1.1, casual: 1.0}
-history:
-  backend: json
-  json_path: ./data/wear_history.json
+      # At the top of a cool day (≈55°F), let long sleeves be rolled if sunny & calm
+      - when: { min_temperature_f: 53, max_temperature_f: 58, max_wind_mph: 10, max_precip_prob: 0.2 }
+        add_tags: [rolled_sleeves_ok]
+        note: "Cool but calm/sunny: rolled sleeves ok"
+
+      # At ~70°F with wind/clouds, keep long sleeves optional
+      - when: { min_temperature_f: 69, max_temperature_f: 72, min_wind_mph: 15 }
+        add_tags: [long_sleeves_ok]
+        note: "Warm but breezy: long sleeves ok"

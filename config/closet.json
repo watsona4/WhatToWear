@@ -1,3 +1,17 @@
 {
-  "items": []
+  "items": [
+    { "name": "Navy sports coat", "type": "outer", "tags": ["sports_coat","business"], "warmth_bonus_f": 7 },
+    { "name": "Wool sweater",     "type": "outer", "tags": ["sweater"],               "warmth_bonus_f": 8 },
+    { "name": "Light cardigan",   "type": "outer", "tags": ["sweater"],               "warmth_bonus_f": 3 },
+
+    { "name": "Blue plaid shirt", "type": "top",    "tags": ["long_sleeves"] },
+    { "name": "White OCBD",       "type": "top",    "tags": ["long_sleeves","business"] },
+    { "name": "Cotton tee",       "type": "top",    "tags": ["short_sleeves"] },
+
+    { "name": "Khaki pants",      "type": "bottom", "tags": ["pants","business"] },
+    { "name": "Jeans",            "type": "bottom", "tags": ["pants","casual"] },
+
+    { "name": "Sneakers",         "type": "shoes",  "tags": ["shoes","casual"] },
+    { "name": "Oxfords",          "type": "shoes",  "tags": ["shoes","business"] }
+  ]
 }
