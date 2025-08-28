@@ -22,8 +22,8 @@ class Outfit:
 class LazyConfig:
     def __init__(self, paths: Dict[str, str]):
         self.paths = paths
-        self.cache = {}
-        self.mtimes = {}
+        self.cache: Dict[str, Any] = {}
+        self.mtimes: Dict[str, float] = {}
 
     def _maybe(self, key: str):
         path = self.paths[key]

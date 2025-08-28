@@ -1,6 +1,8 @@
 import os
+
 from flask import Flask, send_from_directory
 from werkzeug.middleware.proxy_fix import ProxyFix
+
 
 def create_app():
     prefix = os.getenv("WTW_URL_PREFIX", "/wtw")
@@ -12,8 +14,9 @@ def create_app():
     from .routes.api import api_bp
     from .routes.api_v2 import api2_bp
     from .routes.closet_api import closet_bp
-    app.register_blueprint(api_bp,   url_prefix=f"{prefix}/api")
-    app.register_blueprint(api2_bp,  url_prefix=f"{prefix}/api")
+
+    app.register_blueprint(api_bp, url_prefix=f"{prefix}/api")
+    app.register_blueprint(api2_bp, url_prefix=f"{prefix}/api")
     app.register_blueprint(closet_bp, url_prefix=f"{prefix}/api")
 
     @app.get(f"{prefix}/")
