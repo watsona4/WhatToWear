@@ -42,7 +42,7 @@ const API = {
   history: async (days = 14) => {
     const r = await fetch(`./api/v2/history?days=${days}`);
     const txt = await r.text();
-    if (!r.ok) throw new Error(`history ${r.status}: ${txt.slice(0,200)}`);
+    if (!r.ok) throw new Error(`history ${r.status}: ${txt.slice(0, 200)}`);
     return JSON.parse(txt);
   },
 };
@@ -465,28 +465,115 @@ function renderRecentWorn(lastMap) {
 
 // Modern table by day: [{date, items:[...]}]
 function renderRecentWornTable(days) {
-  const txt = document.querySelector("#recent-worn");
-  const tbody = document.querySelector("#recent-worn-table tbody");
-  if (!tbody) return;
+  const table = document.getElementById("recent-worn-table");
+  const thead = document.getElementById("recent-worn-head");
+  const tbody = table?.querySelector("tbody");
+  const empty = document.querySelector("#recent-empty");
+  if (!table || !thead || !tbody) return;
   tbody.innerHTML = "";
-  if (!Array.isArray(days) || days.length === 0) {
-    if (txt) txt.textContent = "No wear data yet.";
-    return;
+  thead.innerHTML = "";
+
+  const hasData = Array.isArray(days) && days.length > 0;
+  if (empty) empty.classList.toggle("visually-hidden", hasData);
+  table.classList.toggle("visually-hidden", !hasData);
+  if (!hasData) return;
+
+  // Build item -> tags map from current closet configuration
+  const closet = readCloset(); // uses current table
+  const tagMap = new Map(); // name -> Set(tags)
+  for (const it of closet) {
+    tagMap.set(it.name, new Set((it.tags || []).map(String)));
   }
-  if (txt) txt.textContent = "";
-  days.forEach(({date, items}) => {
+
+  // Count tags present in the history window
+  const tagCounts = new Map(); // tag -> count
+  for (const day of days) {
+    for (const name of day.items || []) {
+      const tset = tagMap.get(name);
+      if (!tset || tset.size === 0) continue;
+      for (const tag of tset) tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
+    }
+  }
+
+  // Choose top N tags to become columns (tweakable)
+  const MAX_TAG_COLS = 3;
+  const topTags = Array.from(tagCounts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, MAX_TAG_COLS)
+    .map(([t]) => t);
+
+  // Render thead: Date | tag cols... | Other
+  const htr = document.createElement("tr");
+  const thDate = document.createElement("th");
+  thDate.className = "date-cell";
+  thDate.textContent = "Date";
+  htr.appendChild(thDate);
+  for (const tag of topTags) {
+    const th = document.createElement("th");
+    th.textContent = tag.replace(/_/g, " ");
+    htr.appendChild(th);
+  }
+  const thOther = document.createElement("th");
+  thOther.textContent = topTags.length ? "Other" : "Outfit";
+  htr.appendChild(thOther);
+  thead.appendChild(htr);
+
+  // For each day, distribute items into matching tag columns (can appear in multiple)
+  for (const { date, items } of days) {
     const tr = document.createElement("tr");
     const tdDate = document.createElement("td");
     tdDate.className = "date-cell";
     tdDate.innerHTML = `<span class="fw-semibold">${date}</span>`;
-    const tdItems = document.createElement("td");
-    tdItems.innerHTML = (items || []).map(n => `<span class="item-badge me-2 mb-1">${escapeHtml(n)}</span>`).join("");
     tr.appendChild(tdDate);
-    tr.appendChild(tdItems);
+
+    // buckets per column tag
+    const colBuckets = new Map(topTags.map((t) => [t, []]));
+    const other = [];
+    for (const name of items || []) {
+      const tset = tagMap.get(name) || new Set();
+      let matched = false;
+      for (const t of topTags) {
+        if (tset.has(t)) {
+          colBuckets.get(t).push(name);
+          matched = true;
+        }
+      }
+      if (!matched) other.push(name);
+    }
+
+    // emit tag columns
+    for (const t of topTags) {
+      const td = document.createElement("td");
+      td.className = "outfit-cell";
+      const names = colBuckets.get(t) || [];
+      td.innerHTML = names
+        .map(
+          (n) =>
+            `<span class="badge rounded-pill text-bg-light">${escapeHtml(n)}</span>`,
+        )
+        .join("");
+      tr.appendChild(td);
+    }
+    // emit Other / Outfit
+    const tdOther = document.createElement("td");
+    tdOther.className = "outfit-cell";
+    tdOther.innerHTML = other
+      .map(
+        (n) =>
+          `<span class="badge rounded-pill text-bg-light">${escapeHtml(n)}</span>`,
+      )
+      .join("");
+    tr.appendChild(tdOther);
     tbody.appendChild(tr);
-  });
+  }
 }
 
 function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  return String(s).replace(
+    /[&<>"']/g,
+    (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+        c
+      ],
+  );
 }

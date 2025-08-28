@@ -212,11 +212,33 @@ def save_selection():
     for name in items:
         pipe.set(_lw_key(str(name)), iso)
     pipe.execute()
-    # also store the day's outfit as a single JSON array (latest wins)
+
+    # Also store/accumulate the day's outfit as a SET (union across multiple selections that day).
+    # Migration-friendly: if key exists as a JSON string from older versions, migrate to a set.
+    wear_key = _wear_key(iso)
     try:
-        REDIS.set(_wear_key(iso), json.dumps(list(items)))
+        # Fast path: add all items to the set
+        if items:
+            REDIS.sadd(wear_key, *items)
     except Exception as e:
-        LOG.warning("failed to write wear history for %s: %s", iso, e)
+        # WRONGTYPE -> migrate any legacy string to a set, then retry
+        try:
+            raw = REDIS.get(wear_key)
+            legacy = []
+            if raw:
+                try:
+                    legacy = json.loads(raw)
+                    if not isinstance(legacy, list):
+                        legacy = []
+                except Exception:
+                    legacy = []
+            # replace with a set containing legacy items + current items
+            REDIS.delete(wear_key)
+            union = list({*legacy, *items})
+            if union:
+                REDIS.sadd(wear_key, *union)
+        except Exception as e2:
+            LOG.warning("failed to migrate/write wear history for %s: %s", iso, e2)
     return jsonify({"ok": True, "worn_on": iso, "count": len(items)})
 
 
@@ -255,9 +277,34 @@ def history():
     for i in range(days):
         d = today - timedelta(days=i)
         try:
-            raw = REDIS.get(_wear_key(d))
-            if raw:
-                items = json.loads(raw)
+            key = _wear_key(d)
+            # Preferred: read as a set (union of all selections that day)
+            items = []
+            try:
+                members = REDIS.smembers(key)
+                if members:
+                    items = sorted(members)
+                else:
+                    # Back-compat: legacy JSON string (single selection stored)
+                    raw = REDIS.get(key)
+                    if raw:
+                        try:
+                            parsed = json.loads(raw)
+                            if isinstance(parsed, list):
+                                items = parsed
+                        except Exception:
+                            items = []
+            except Exception:
+                # If SMEMBERS fails due to WRONGTYPE etc., fall back to GET JSON
+                raw = REDIS.get(key)
+                if raw:
+                    try:
+                        parsed = json.loads(raw)
+                        if isinstance(parsed, list):
+                            items = parsed
+                    except Exception:
+                        items = []
+            if items:
                 out.append({"date": d.isoformat(), "items": items})
         except Exception as e:
             LOG.warning("history read failed for %s: %s", d, e)
