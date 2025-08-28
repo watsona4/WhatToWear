@@ -1,27 +1,50 @@
-tags: [casual, business, formal, outdoors, cycling, rain-ready, snow-ready, sun-safe, windproof, warm, cool, hot, cold]
+tags:
+  [
+    casual,
+    business,
+    formal,
+    outdoors,
+    cycling,
+    rain-ready,
+    snow-ready,
+    sun-safe,
+    windproof,
+    warm,
+    cool,
+    hot,
+    cold,
+  ]
 outfits:
   - id: jeans_tshirt
     name: Jeans + T‑Shirt
     tags: [casual, cool]
-    pieces: [{top: "Cotton T‑Shirt"}, {bottom: "Jeans"}, {shoes: "Sneakers"}]
-    requires: {min_temp_f: 55, max_temp_f: 80, max_precip_prob: 0.4, max_wind_mph: 25}
+    pieces:
+      [{ top: "Cotton T‑Shirt" }, { bottom: "Jeans" }, { shoes: "Sneakers" }]
+    requires:
+      { min_temp_f: 55, max_temp_f: 80, max_precip_prob: 0.4, max_wind_mph: 25 }
   - id: chinos_buttondown
     name: Chinos + Button‑Down
     tags: [business, cool]
-    pieces: [{top: "Button‑Down Shirt"}, {bottom: "Chinos"}, {shoes: "Loafers"}]
-    requires: {min_temp_f: 50, max_temp_f: 85, max_precip_prob: 0.5}
+    pieces:
+      [{ top: "Button‑Down Shirt" }, { bottom: "Chinos" }, { shoes: "Loafers" }]
+    requires: { min_temp_f: 50, max_temp_f: 85, max_precip_prob: 0.5 }
   - id: rain_shell
     name: Rain Shell Layer
     tags: [rain-ready, windproof]
-    pieces: [{outer: "Gore‑Tex Shell"}]
-    requires: {min_precip_prob: 0.5}
+    pieces: [{ outer: "Gore‑Tex Shell" }]
+    requires: { min_precip_prob: 0.5 }
   - id: winter_parka
     name: Winter Parka
     tags: [cold, windproof, snow-ready]
-    pieces: [{outer: "Insulated Parka"}, {accessory: "Beanie"}, {accessory2: "Gloves"}]
-    requires: {max_temp_f: 35}
+    pieces:
+      [
+        { outer: "Insulated Parka" },
+        { accessory: "Beanie" },
+        { accessory2: "Gloves" },
+      ]
+    requires: { max_temp_f: 35 }
   - id: sun_hat
     name: Sun Hat
     tags: [sun-safe, hot]
-    pieces: [{accessory: "Wide‑brim Hat"}]
-    requires: {min_uv_index: 6}
+    pieces: [{ accessory: "Wide‑brim Hat" }]
+    requires: { min_uv_index: 6 }

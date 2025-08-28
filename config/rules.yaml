@@ -5,7 +5,6 @@
 units: imperial
 
 rule_sets:
-
   # ===== THERMAL BANDS (base layers) =====
   # Interprets today's *effective* temperature into broad outfit building blocks.
   - id: thermal_bands
@@ -57,7 +56,7 @@ rule_sets:
     continue: true
     rules:
       # Rain/Snow — choose waterproof outer & footwear
-      - when: { min_precip_prob: 0.4 }      # ≥ 40% chance
+      - when: { min_precip_prob: 0.4 } # ≥ 40% chance
         add_tags: [rain_ready, waterproof, hood_ok]
         note: "Wet: prefer rain-ready layers"
 
@@ -82,7 +81,13 @@ rule_sets:
     continue: true
     rules:
       # At the top of a cool day (≈55°F), let long sleeves be rolled if sunny & calm
-      - when: { min_temperature_f: 53, max_temperature_f: 58, max_wind_mph: 10, max_precip_prob: 0.2 }
+      - when:
+          {
+            min_temperature_f: 53,
+            max_temperature_f: 58,
+            max_wind_mph: 10,
+            max_precip_prob: 0.2,
+          }
         add_tags: [rolled_sleeves_ok]
         note: "Cool but calm/sunny: rolled sleeves ok"
 
