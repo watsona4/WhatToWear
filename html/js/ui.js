@@ -32,6 +32,12 @@ const API = {
         throw new Error(body.error || `HTTP ${r.status}`);
       return body;
     }),
+  resetLastWorn: async () => {
+    const r = await fetch(`./api/v2/reset_last_worn`, { method: 'POST' });
+    const txt = await r.text();
+    if (!r.ok) throw new Error(`reset ${r.status}: ${txt.slice(0,200)}`);
+    return JSON.parse(txt);
+  },
 };
 
 async function geolocate() {
@@ -379,6 +385,44 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.querySelector("#btn-geolocate").click();
   } catch {}
   await loadCloset();
+
+  // --- Reset history modal wiring ---
+  const resetOpen = document.querySelector("#btn-reset-open");
+  const resetConfirm = document.querySelector("#btn-reset-confirm");
+  const resetModalEl = document.querySelector("#resetModal");
+  let resetModal;
+  if (resetModalEl) {
+    resetModal = new bootstrap.Modal(resetModalEl);
+  }
+  if (resetOpen && resetModal) {
+    resetOpen.addEventListener("click", () => resetModal.show());
+  }
+  if (resetConfirm && resetModal) {
+    resetConfirm.addEventListener("click", async () => {
+      resetConfirm.disabled = true;
+      resetConfirm.textContent = "Resetting…";
+      try {
+        const res = await API.resetLastWorn();
+        console.debug("reset_last_worn:", res);
+        // Refresh availability + UI
+        const avail = await API.availability();
+        window._availability = avail.availability || {};
+        window._availabilityToday = avail.today;
+        window._lastWorn = avail.last_worn || {};
+        renderRecentWorn(window._lastWorn);
+        const closet = readCloset();
+        const ctx = window._effectsCtx || {};
+        renderCombos(generateCombos(closet, ctx));
+        resetModal.hide();
+      } catch (err) {
+        console.error(err);
+        alert(`Could not reset: ${err.message || err}`);
+      } finally {
+        resetConfirm.disabled = false;
+        resetConfirm.textContent = "Yes, reset";
+      }
+    });
+  }
 });
 
 // --- Recently worn rendering ---

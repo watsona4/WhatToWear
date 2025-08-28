@@ -208,3 +208,19 @@ def save_selection():
         pipe.set(_lw_key(str(name)), iso)
     pipe.execute()
     return jsonify({"ok": True, "worn_on": iso, "count": len(items)})
+
+
+@api2_bp.route("/v2/reset_last_worn", methods=["POST"])
+def reset_last_worn():
+    """Clear last-worn tracking for all closet items (debug-friendly, non-destructive)."""
+    if REDIS is None:
+        return jsonify({"ok": False, "error": "redis not configured"}), 503
+    items = _closet_items()
+    if not items:
+        return jsonify({"ok": True, "deleted": 0})
+    pipe = REDIS.pipeline()
+    for it in items:
+        pipe.delete(_lw_key(it["name"]))
+    res = pipe.execute()
+    deleted = sum(1 for x in res if isinstance(x, int) and x > 0)
+    return jsonify({"ok": True, "deleted": deleted})
