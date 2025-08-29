@@ -88,6 +88,9 @@ def _wear_key(d: date | str) -> str:
 def suggest():
     lat = float(request.args.get("lat", os.environ.get("LAT", "42.6526")))
     lon = float(request.args.get("lon", os.environ.get("LON", "-73.7562")))
+    mode = (request.args.get("mode") or "all_day").lower()
+    if mode not in ("all_day", "blocks"):
+        mode = "all_day"
     tz = os.environ.get("TZ", "America/New_York")
     weather = OpenMeteoProvider(lat, lon, tz).fetch()
     ctx = {
@@ -110,10 +113,40 @@ def suggest():
         redis=REDIS,
     )
     pick = choose_outfit(outfits, effects["tags"], ctx, hist, rules_cfg)
+    # --- simple daily plan with blocks ---
+    low = float(weather["daily"]["low_f"])
+    high = float(weather["daily"]["high_f"])
+    swing = round(high - low, 1)
+    mid = round((low + high) / 2.0, 1)
+    blocks = [
+        {"name": "Morning", "key": "morning", "temp_f": low},
+        {"name": "Midday", "key": "midday", "temp_f": high},
+        {"name": "Evening", "key": "evening", "temp_f": mid},
+    ]
+    plan = {
+        "mode": mode,
+        "low_f": low,
+        "high_f": high,
+        "swing_f": swing,
+        "layer_if_swing_gt": 15.0,
+        "recommend_layers": swing >= 15.0,
+        "blocks": blocks,
+        "notes": [],
+    }
+    try:
+        if (weather["daily"].get("precip_prob_max") or 0) >= 0.5:
+            plan["notes"].append("Bring rain layer (precip ≥50%).")
+        if (weather["daily"].get("wind_mph_max") or 0) >= 20:
+            plan["notes"].append("Windy periods; consider windbreaker.")
+        if (weather["daily"].get("uv_index_max") or 0) >= 7:
+            plan["notes"].append("High UV midday.")
+    except Exception:
+        pass
     return jsonify({
         "weather": weather,
         "effects": effects,
         "outfit": {"id": pick.id, "name": pick.name, "tags": pick.tags, "pieces": pick.pieces},
+        "plan": plan,
     })
 
 

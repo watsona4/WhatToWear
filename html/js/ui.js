@@ -1,7 +1,16 @@
 const $ = (sel) => document.querySelector(sel);
+
+// ---- Session caches to keep the "Recently worn" table stable ----
+let _historyDays = [];
+let _recentTopTags = null; // array of chosen tag columns
+
 const API = {
-  suggest: async (lat, lon) =>
-    fetch(`./api/v2/suggest?lat=${lat}&lon=${lon}`).then((r) => r.json()),
+  suggest: async (lat, lon, mode) =>
+    fetch(
+      `./api/v2/suggest?lat=${lat}&lon=${lon}&mode=${encodeURIComponent(
+        mode || "all_day",
+      )}`,
+    ).then((r) => r.json()),
   getCloset: async () => fetch(`./api/v2/closet`).then((r) => r.json()),
   saveCloset: async (items) =>
     fetch(`./api/v2/closet`, {
@@ -58,6 +67,11 @@ async function geolocate() {
   });
 }
 
+function currentMode() {
+  const el = document.querySelector('input[name="mode"]:checked');
+  return el?.value || "all_day";
+}
+
 function renderWeather(weather) {
   const d = weather.daily;
   document.querySelector("#weather").innerHTML = `High ${d.high_f.toFixed(
@@ -78,6 +92,35 @@ function renderOutfit(outfit) {
   const pieces = outfit.pieces.map((p) => Object.values(p)[0]).join(", ");
   document.querySelector("#outfit").innerHTML =
     `<div class="fw-semibold">${outfit.name}</div><div class="small text-muted">${pieces}</div>`;
+}
+
+function renderPlan(plan) {
+  const el = document.querySelector("#plan");
+  if (!el || !plan) return;
+  const swing = Math.round(plan.swing_f || 0);
+  const notes = (plan.notes || [])
+    .map((n) => `<li>${escapeHtml(n)}</li>`)
+    .join("");
+  const blocks = (plan.blocks || [])
+    .map(
+      (b) =>
+        `<span class="badge rounded-pill text-bg-light me-2 mb-1">${b.name}: ${Math.round(
+          b.temp_f,
+        )}°F</span>`,
+    )
+    .join("");
+  const rec = plan.recommend_layers
+    ? `<span class="badge text-bg-warning">Large swing → bring/removable layers</span>`
+    : `<span class="badge text-bg-success">Stable day</span>`;
+  el.innerHTML = `
+    <div class="d-flex flex-wrap align-items-center gap-2">
+      <div><strong>Low/High:</strong> ${Math.round(plan.low_f)}° / ${Math.round(
+        plan.high_f,
+      )}°</div>
+      <div><strong>Swing:</strong> ${swing}°</div><div>${rec}</div></div>
+    <div class="mt-2">${blocks}</div>${
+      notes ? `<ul class="mt-2 mb-0 small text-muted">${notes}</ul>` : ``
+    }`;
 }
 
 function constraintPass(constraints, ctx) {
@@ -253,6 +296,97 @@ function generateCombos(items, ctx) {
   return combos;
 }
 
+function generateCombosForBlock(items, baseCtx, tempF) {
+  const t = Number(tempF) || 0;
+  const ctx = {
+    ...baseCtx,
+    temperature_f: t,
+    apparent_f: t,
+    min_temp_f: Math.min(baseCtx.min_temp_f ?? t, t),
+    max_temp_f: Math.max(baseCtx.max_temp_f ?? t, t),
+  };
+  return generateCombos(items, ctx);
+}
+
+function renderCombosByBlocks(items, baseCtx, plan) {
+  const el = document.querySelector("#combos");
+  const blocks = plan?.blocks || [];
+  if (!blocks.length) {
+    el.innerHTML = "<div class='text-muted small'>No blocks available.</div>";
+    return;
+  }
+  el.innerHTML = blocks
+    .map((b) => {
+      const list = generateCombosForBlock(items, baseCtx, b.temp_f).slice(
+        0,
+        10,
+      );
+      const inner = list.length
+        ? list
+            .map((c) => {
+              const parts = [
+                c.top,
+                c.bottom,
+                c.outer,
+                (c.accessories || []).join(" + "),
+                c.shoes,
+              ]
+                .filter(Boolean)
+                .join(" + ");
+              const itemsStr = JSON.stringify(comboItems(c)).replace(
+                /"/g,
+                "&quot;",
+              );
+              return `<div class="combo-card p-2 border rounded mb-2" role="button" tabindex="0" data-items="${itemsStr}" style="cursor:pointer; user-select:none;"><div class="fw-semibold">${parts}</div><div class="text-muted small">${Math.round(
+                b.temp_f,
+              )}°F • Tap to wear</div></div>`;
+            })
+            .join("")
+        : `<div class="text-muted small">No valid combos for ~${Math.round(
+            b.temp_f,
+          )}°F.</div>`;
+      return `<div class="mb-3"><div class="h6 mb-2">${b.name}</div>${inner}</div>`;
+    })
+    .join("");
+}
+
+// ---------- History loading & stable rendering ----------
+async function loadHistory(days = 21) {
+  try {
+    const hist = await API.history(days);
+    _historyDays = hist.days || [];
+    // lock columns for the session based on current closet + history
+    const closet = readCloset();
+    _recentTopTags = computeTopTags(_historyDays, closet, 3);
+    renderRecentWornTable(_historyDays, _recentTopTags);
+  } catch (e) {
+    console.warn("history failed", e);
+    _historyDays = [];
+    renderRecentWornTable([], _recentTopTags);
+  }
+}
+
+function computeTopTags(days, closetItems, maxCols = 3) {
+  // name -> tags set from closet config
+  const tagMap = new Map();
+  for (const it of closetItems || []) {
+    tagMap.set(it.name, new Set((it.tags || []).map(String)));
+  }
+  // count tag frequency across all days
+  const counts = new Map();
+  for (const d of days || []) {
+    for (const name of d.items || []) {
+      const set = tagMap.get(name);
+      if (!set) continue;
+      for (const t of set) counts.set(t, (counts.get(t) || 0) + 1);
+    }
+  }
+  return Array.from(counts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, maxCols)
+    .map(([t]) => t);
+}
+
 function renderCombos(combos) {
   const el = document.querySelector("#combos");
   if (!combos.length) {
@@ -288,10 +422,12 @@ async function refreshSuggest() {
   const lat = +(document.querySelector("#lat").value || 0);
   const lon = +(document.querySelector("#lon").value || 0);
   if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
-  const data = await API.suggest(lat, lon);
+  const data = await API.suggest(lat, lon, currentMode());
   renderWeather(data.weather);
   renderEffects(data.effects);
   renderOutfit(data.outfit);
+  window._plan = data.plan || null;
+  renderPlan(window._plan);
   window._effectsCtx = {
     tags: data.effects.tags,
     min_temp_f: data.weather.daily.low_f,
@@ -303,20 +439,13 @@ async function refreshSuggest() {
     apparent_f: data.weather.daily.high_f,
   };
 
-  // Load availability after we have context (used to filter combos)
+  // Keep history separate (we DO NOT re-render history here).
+  // We can still load availability for filtering combos.
   try {
     const avail = await API.availability();
     window._availability = avail.availability || {};
     window._availabilityToday = avail.today;
     window._lastWorn = avail.last_worn || {};
-    // in addition to last_worn map, load daily history to render the table
-    try {
-      const hist = await API.history(21); // ~3 weeks
-      renderRecentWornTable(hist.days || []);
-    } catch (e) {
-      console.warn("history failed", e);
-      renderRecentWorn(window._lastWorn); // fallback simple list
-    }
   } catch (e) {
     console.warn("availability failed", e);
   }
@@ -356,13 +485,35 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.querySelector("#btn-generate").addEventListener("click", () => {
     const items = readCloset();
     const ctx = window._effectsCtx || {};
-    const combos = generateCombos(items, ctx);
-    renderCombos(combos);
+    const plan = window._plan || {};
+    if (currentMode() === "blocks" && plan?.blocks?.length) {
+      renderCombosByBlocks(items, ctx, plan);
+    } else {
+      renderCombos(generateCombos(items, ctx));
+    }
   });
 
-  // Tap-to-select: the entire combo card acts as the button
-  document.addEventListener("click", async (e) => {
-    const card = e.target.closest(".combo-card");
+  // Initial history load (once)
+  await loadHistory(21);
+
+  // Mode toggle → refresh plan and (re)render combos WITHOUT touching history
+  document.querySelectorAll('input[name="mode"]').forEach((el) => {
+    el.addEventListener("change", async () => {
+      await refreshSuggest();
+      const items = readCloset();
+      const ctx = window._effectsCtx || {};
+      const plan = window._plan || {};
+      if (currentMode() === "blocks" && plan?.blocks?.length) {
+        renderCombosByBlocks(items, ctx, plan);
+      } else {
+        renderCombos(generateCombos(items, ctx));
+      }
+    });
+  });
+
+  // Tap-to-select: scope clicks ONLY inside the combos container
+  document.getElementById("combos")?.addEventListener("click", async (e) => {
+    const card = e.target.closest("#combos .combo-card");
     if (!card) return;
     let items = [];
     try {
@@ -375,20 +526,24 @@ document.addEventListener("DOMContentLoaded", async () => {
     card.classList.add("opacity-50");
     try {
       await API.saveSelection(items);
-      const avail = await API.availability();
-      window._availability = avail.availability || {};
-      window._availabilityToday = avail.today;
-      window._lastWorn = avail.last_worn || {};
+
+      // Refresh history ONLY after a real selection
+      await loadHistory(21);
+
+      // Optional: refresh availability
       try {
-        const hist = await API.history(21);
-        renderRecentWornTable(hist.days || []);
+        const avail = await API.availability();
+        window._availability = avail.availability || {};
+        window._availabilityToday = avail.today;
+        window._lastWorn = avail.last_worn || {};
       } catch (e) {
-        console.warn("history failed", e);
-        renderRecentWorn(window._lastWorn);
+        console.warn("availability failed", e);
       }
+
       const closet = readCloset();
       const ctx = window._effectsCtx || {};
       renderCombos(generateCombos(closet, ctx));
+
       // brief visual confirmation
       card.classList.add("border-success");
       setTimeout(
@@ -423,14 +578,19 @@ document.addEventListener("DOMContentLoaded", async () => {
       resetConfirm.disabled = true;
       resetConfirm.textContent = "Resetting…";
       try {
-        const res = await API.resetLastWorn();
-        console.debug("reset_last_worn:", res);
-        // Refresh availability + UI
-        const avail = await API.availability();
-        window._availability = avail.availability || {};
-        window._availabilityToday = avail.today;
-        window._lastWorn = avail.last_worn || {};
-        renderRecentWornTable([]);
+        await API.resetLastWorn();
+
+        // After a reset, reload history (clears table)
+        await loadHistory(21);
+
+        // Optional: refresh availability
+        try {
+          const avail = await API.availability();
+          window._availability = avail.availability || {};
+          window._availabilityToday = avail.today;
+          window._lastWorn = avail.last_worn || {};
+        } catch {}
+
         const closet = readCloset();
         const ctx = window._effectsCtx || {};
         renderCombos(generateCombos(closet, ctx));
@@ -446,7 +606,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
-// --- Recently worn rendering ---
+// --- Recently worn (legacy, simple text) ---
 function renderRecentWorn(lastMap) {
   const el = document.querySelector("#recent-worn");
   if (!el) return;
@@ -463,10 +623,12 @@ function renderRecentWorn(lastMap) {
     .join("");
 }
 
-// Modern table by day: [{date, items:[...]}]
-function renderRecentWornTable(days) {
+// Modern table by day with optional fixed columns (topTags)
+function renderRecentWornTable(days, topTags) {
   const table = document.getElementById("recent-worn-table");
-  const thead = document.getElementById("recent-worn-head");
+  const thead =
+    document.getElementById("recent-worn-head") ||
+    table?.querySelector("thead");
   const tbody = table?.querySelector("tbody");
   const empty = document.querySelector("#recent-empty");
   if (!table || !thead || !tbody) return;
@@ -478,29 +640,12 @@ function renderRecentWornTable(days) {
   table.classList.toggle("visually-hidden", !hasData);
   if (!hasData) return;
 
-  // Build item -> tags map from current closet configuration
-  const closet = readCloset(); // uses current table
-  const tagMap = new Map(); // name -> Set(tags)
-  for (const it of closet) {
-    tagMap.set(it.name, new Set((it.tags || []).map(String)));
-  }
-
-  // Count tags present in the history window
-  const tagCounts = new Map(); // tag -> count
-  for (const day of days) {
-    for (const name of day.items || []) {
-      const tset = tagMap.get(name);
-      if (!tset || tset.size === 0) continue;
-      for (const tag of tset) tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
-    }
-  }
-
-  // Choose top N tags to become columns (tweakable)
-  const MAX_TAG_COLS = 3;
-  const topTags = Array.from(tagCounts.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, MAX_TAG_COLS)
-    .map(([t]) => t);
+  // If columns aren’t provided (locked), compute once from current closet + days
+  const closet = readCloset(); // current config
+  const cols =
+    Array.isArray(topTags) && topTags.length
+      ? topTags
+      : computeTopTags(days, closet, 3);
 
   // Render thead: Date | tag cols... | Other
   const htr = document.createElement("tr");
@@ -508,17 +653,17 @@ function renderRecentWornTable(days) {
   thDate.className = "date-cell";
   thDate.textContent = "Date";
   htr.appendChild(thDate);
-  for (const tag of topTags) {
+  for (const tag of cols) {
     const th = document.createElement("th");
     th.textContent = tag.replace(/_/g, " ");
     htr.appendChild(th);
   }
   const thOther = document.createElement("th");
-  thOther.textContent = topTags.length ? "Other" : "Outfit";
+  thOther.textContent = cols.length ? "Other" : "Outfit";
   htr.appendChild(thOther);
   thead.appendChild(htr);
 
-  // For each day, distribute items into matching tag columns (can appear in multiple)
+  // For each day, distribute items
   for (const { date, items } of days) {
     const tr = document.createElement("tr");
     const tdDate = document.createElement("td");
@@ -527,14 +672,16 @@ function renderRecentWornTable(days) {
     tr.appendChild(tdDate);
 
     // buckets per column tag
-    const colBuckets = new Map(topTags.map((t) => [t, []]));
+    const tagBuckets = new Map(cols.map((t) => [t, []]));
     const other = [];
     for (const name of items || []) {
-      const tset = tagMap.get(name) || new Set();
+      const tags = (closet.find((x) => x.name === name)?.tags || []).map(
+        String,
+      );
       let matched = false;
-      for (const t of topTags) {
-        if (tset.has(t)) {
-          colBuckets.get(t).push(name);
+      for (const t of cols) {
+        if (tags.includes(t)) {
+          tagBuckets.get(t).push(name);
           matched = true;
         }
       }
@@ -542,14 +689,16 @@ function renderRecentWornTable(days) {
     }
 
     // emit tag columns
-    for (const t of topTags) {
+    for (const t of cols) {
       const td = document.createElement("td");
       td.className = "outfit-cell";
-      const names = colBuckets.get(t) || [];
+      const names = tagBuckets.get(t) || [];
       td.innerHTML = names
         .map(
           (n) =>
-            `<span class="badge rounded-pill text-bg-light">${escapeHtml(n)}</span>`,
+            `<span class="badge rounded-pill text-bg-light">${escapeHtml(
+              n,
+            )}</span>`,
         )
         .join("");
       tr.appendChild(td);
@@ -560,7 +709,9 @@ function renderRecentWornTable(days) {
     tdOther.innerHTML = other
       .map(
         (n) =>
-          `<span class="badge rounded-pill text-bg-light">${escapeHtml(n)}</span>`,
+          `<span class="badge rounded-pill text-bg-light">${escapeHtml(
+            n,
+          )}</span>`,
       )
       .join("");
     tr.appendChild(tdOther);
@@ -572,8 +723,12 @@ function escapeHtml(s) {
   return String(s).replace(
     /[&<>"']/g,
     (c) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
-        c
-      ],
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      })[c],
   );
 }

@@ -236,6 +236,41 @@
         </div>
       </div>
 
+      <!-- How to plan (mode toggle) -->
+      <div class="mt-3 p-3 bg-white shadow-sm rounded">
+        <div class="d-flex align-items-center justify-content-between">
+          <h2 class="h5 mb-0">How to plan</h2>
+          <div class="btn-group btn-group-sm" role="group" aria-label="Mode">
+            <input
+              type="radio"
+              class="btn-check"
+              name="mode"
+              id="mode-all"
+              value="all_day"
+              autocomplete="off"
+              checked
+            />
+            <label class="btn btn-outline-secondary" for="mode-all"
+              >All-day outfit</label
+            >
+            <input
+              type="radio"
+              class="btn-check"
+              name="mode"
+              id="mode-blocks"
+              value="blocks"
+              autocomplete="off"
+            />
+            <label class="btn btn-outline-secondary" for="mode-blocks"
+              >By time of day</label
+            >
+          </div>
+        </div>
+        <div id="plan" class="mt-3 small text-muted">
+          <!-- plan summary injected by JS -->
+        </div>
+      </div>
+
       <div class="mt-3 p-3 bg-white shadow-sm rounded">
         <div class="d-flex align-items-center justify-content-between">
           <h2 class="h5">Today's combinations</h2>
