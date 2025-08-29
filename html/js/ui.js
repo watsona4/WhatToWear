@@ -94,6 +94,68 @@ function renderOutfit(outfit) {
     `<div class="fw-semibold">${outfit.name}</div><div class="small text-muted">${pieces}</div>`;
 }
 
+// Helper: display label "Name (ID)" when available
+function displayLabel(name) {
+  const closet = readCloset();
+  const it = closet.find((x) => x.name === name);
+  if (!it) return name;
+  return it.id_code ? `${name} ` + `<span class="badge rounded-pill id-badge">${escapeHtml(it.id_code)}</span>` : name;
+}
+
+// ---------- ID helper: infer a prefix + auto-increment ----------
+function inferIdPrefixFrom(item) {
+  const name = (item.name || "").toLowerCase();
+  const tags = new Set((item.tags || []).map((t) => String(t).toLowerCase()));
+  const has = (t) => tags.has(t);
+  // tops
+  if (item.type === "top") {
+    const bd = has("button_down") || /button|ocbd/.test(name);
+    if ((has("short_sleeves") || /short/.test(name)) && bd) return "SSBD";
+    if ((has("long_sleeves") || /long/.test(name)) && bd) return "LSBD";
+    if (has("tee") || /tee|t-?shirt/.test(name)) return "TEE";
+  }
+  // bottoms
+  if (item.type === "bottom") {
+    if (has("chino") || /chino|khaki/.test(name)) return "CHINO";
+    if (has("jeans") || /jean/.test(name)) return "JEAN";
+    if (has("shorts") || /short/.test(name)) return "SHORT";
+  }
+  return null;
+}
+
+function nextIdForPrefix(prefix) {
+  // scan current closet for existing IDs with this prefix and pick next 2-digit
+  const closet = readCloset();
+  let max = 0;
+  for (const it of closet) {
+    const m = String(it.id_code || "").match(new RegExp("^" + prefix + "-(\\d{2})$"));
+    if (m) max = Math.max(max, parseInt(m[1], 10));
+  }
+  const n = String(max + 1).padStart(2, "0");
+  return `${prefix}-${n}`;
+}
+
+function handleAutoIdClick(tr) {
+  const item = {
+    name: tr.querySelector(".name")?.value || "",
+    type: tr.querySelector(".type")?.value || "",
+    tags: (tr.querySelector(".tags")?.value || "")
+      .split(",").map((s) => s.trim()).filter(Boolean),
+  };
+  let prefix = inferIdPrefixFrom(item);
+  if (!prefix) {
+    const input = prompt("Enter ID prefix (SSBD, LSBD, TEE, CHINO, JEAN, SHORT):", "TEE");
+    if (!input) return;
+    const up = input.toUpperCase().trim();
+    if (!/^SSBD|LSBD|TEE|CHINO|JEAN|SHORT$/.test(up)) {
+      alert("Invalid prefix.");
+      return;
+    }
+    prefix = up;
+  }
+  tr.querySelector(".id_code").value = nextIdForPrefix(prefix);
+}
+
 function renderPlan(plan) {
   const el = document.querySelector("#plan");
   if (!el || !plan) return;
@@ -165,6 +227,12 @@ function rowTemplate(item) {
           .join("")}
       </select>
     </td>
+    <td>
+      <div class="input-group input-group-sm">
+        <input class="form-control id_code" value="${item.id_code || ""}" placeholder="e.g., SSBD-07">
+        <button class="btn btn-outline-secondary auto-id" type="button" title="Generate next ID">Auto</button>
+      </div>
+    </td>
     <td><input class="form-control form-control-sm tags" value="${(
       item.tags || []
     ).join(", ")}" placeholder="rain-ready, business"></td>
@@ -174,9 +242,13 @@ function rowTemplate(item) {
     <td><input class="form-control form-control-sm warmth" type="number" step="1" value="${
       item.warmth_bonus_f ?? ""
     }" placeholder="e.g., 7"></td>
+    <td class="text-center">
+      <input class="form-check-input wearable" type="checkbox" ${item.wearable === false ? "" : "checked"} title="Currently wearable">
+    </td>
     <td class="text-end"><button class="btn btn-outline-danger btn-sm remove">✕</button></td>
   `;
   tr.querySelector(".remove").addEventListener("click", () => tr.remove());
+  tr.querySelector(".auto-id").addEventListener("click", () => handleAutoIdClick(tr));
   return tr;
 }
 
@@ -193,6 +265,7 @@ function readCloset() {
     .map((r) => ({
       name: r.querySelector(".name").value.trim(),
       type: r.querySelector(".type").value,
+      id_code: r.querySelector(".id_code").value.trim(),
       tags: r
         .querySelector(".tags")
         .value.split(",")
@@ -203,6 +276,7 @@ function readCloset() {
         const v = r.querySelector(".warmth").value.trim();
         return v === "" ? undefined : Number(v);
       })(),
+      wearable: r.querySelector(".wearable").checked,
     }))
     .filter((x) => x.name);
 }
@@ -229,18 +303,11 @@ function chooseShoes(items) {
 }
 
 function generateCombos(items, ctx) {
-  const tops = items.filter(
-    (i) => i.type === "top" && constraintPass(i.constraints || [], ctx),
-  );
-  const bottoms = items.filter(
-    (i) => i.type === "bottom" && constraintPass(i.constraints || [], ctx),
-  );
-  const outers = items.filter(
-    (i) => i.type === "outer" && constraintPass(i.constraints || [], ctx),
-  );
-  const accessories = items.filter(
-    (i) => i.type === "accessory" && constraintPass(i.constraints || [], ctx),
-  );
+  const wearable = (i) => i.wearable !== false; // default true
+  const tops = items.filter((i) => i.type === "top" && wearable(i) && constraintPass(i.constraints || [], ctx));
+  const bottoms = items.filter((i) => i.type === "bottom" && wearable(i) && constraintPass(i.constraints || [], ctx));
+  const outers = items.filter((i) => i.type === "outer" && wearable(i) && constraintPass(i.constraints || [], ctx));
+  const accessories = items.filter((i) => i.type === "accessory" && wearable(i) && constraintPass(i.constraints || [], ctx));
   const shoes = chooseShoes(items);
 
   const combos = [];
@@ -325,14 +392,14 @@ function renderCombosByBlocks(items, baseCtx, plan) {
         ? list
             .map((c) => {
               const parts = [
-                c.top,
-                c.bottom,
-                c.outer,
-                (c.accessories || []).join(" + "),
-                c.shoes,
+                displayLabel(c.top),
+                displayLabel(c.bottom),
+                c.outer ? displayLabel(c.outer) : null,
+                (c.accessories || []).map(displayLabel).join(" + "),
+                c.shoes ? displayLabel(c.shoes) : null,
               ]
-                .filter(Boolean)
-                .join(" + ");
+                 .filter(Boolean)
+                 .join(" + ");
               const itemsStr = JSON.stringify(comboItems(c)).replace(
                 /"/g,
                 "&quot;",
@@ -355,9 +422,11 @@ async function loadHistory(days = 21) {
   try {
     const hist = await API.history(days);
     _historyDays = hist.days || [];
-    // lock columns for the session based on current closet + history
-    const closet = readCloset();
-    _recentTopTags = computeTopTags(_historyDays, closet, 3);
+    // Only compute tag columns once (at startup) if not already set
+    if (!_recentTopTags) {
+      const closet = readCloset();
+      _recentTopTags = computeTopTags(_historyDays, closet, 3);
+    }
     renderRecentWornTable(_historyDays, _recentTopTags);
   } catch (e) {
     console.warn("history failed", e);
@@ -398,11 +467,11 @@ function renderCombos(combos) {
     .slice(0, 20)
     .map((c) => {
       const parts = [
-        c.top,
-        c.bottom,
-        c.outer,
-        (c.accessories || []).join(" + "),
-        c.shoes,
+        displayLabel(c.top),
+        displayLabel(c.bottom),
+        c.outer ? displayLabel(c.outer) : null,
+        (c.accessories || []).map(displayLabel).join(" + "),
+        c.shoes ? displayLabel(c.shoes) : null,
       ].filter(Boolean);
       const items = JSON.stringify(comboItems(c)).replace(/"/g, "&quot;");
       return `
@@ -496,6 +565,20 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Initial history load (once)
   await loadHistory(21);
 
+  // ---- Auto-generate combos on first load ----
+  try {
+    // If geolocation succeeded earlier, refreshSuggest already ran.
+    // Either way, attempt to render combos right away.
+    const items = readCloset();
+    const ctx = window._effectsCtx || {};
+    const plan = window._plan || {};
+    if (currentMode() === "blocks" && plan?.blocks?.length) {
+      renderCombosByBlocks(items, ctx, plan);
+    } else {
+      renderCombos(generateCombos(items, ctx));
+    }
+  } catch {}
+
   // Mode toggle → refresh plan and (re)render combos WITHOUT touching history
   document.querySelectorAll('input[name="mode"]').forEach((el) => {
     el.addEventListener("change", async () => {
@@ -580,8 +663,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       try {
         await API.resetLastWorn();
 
-        // After a reset, reload history (clears table)
-        await loadHistory(21);
+        // After a reset, clear history completely
+        _historyDays = [];
+        renderRecentWornTable([], _recentTopTags);
 
         // Optional: refresh availability
         try {
@@ -623,12 +707,10 @@ function renderRecentWorn(lastMap) {
     .join("");
 }
 
-// Modern table by day with optional fixed columns (topTags)
-function renderRecentWornTable(days, topTags) {
+// Modern table by day with fixed type columns
+function renderRecentWornTable(days) {
   const table = document.getElementById("recent-worn-table");
-  const thead =
-    document.getElementById("recent-worn-head") ||
-    table?.querySelector("thead");
+  const thead = table?.querySelector("thead");
   const tbody = table?.querySelector("tbody");
   const empty = document.querySelector("#recent-empty");
   if (!table || !thead || !tbody) return;
@@ -640,30 +722,24 @@ function renderRecentWornTable(days, topTags) {
   table.classList.toggle("visually-hidden", !hasData);
   if (!hasData) return;
 
-  // If columns aren’t provided (locked), compute once from current closet + days
-  const closet = readCloset(); // current config
-  const cols =
-    Array.isArray(topTags) && topTags.length
-      ? topTags
-      : computeTopTags(days, closet, 3);
+  const closet = readCloset();
+  const types = ["top", "bottom", "outer", "accessory", "shoes"];
+  const findType = (name) => closet.find((x) => x.name === name)?.type || "accessory";
 
-  // Render thead: Date | tag cols... | Other
+  // Render header: Date + each type
   const htr = document.createElement("tr");
   const thDate = document.createElement("th");
   thDate.className = "date-cell";
   thDate.textContent = "Date";
   htr.appendChild(thDate);
-  for (const tag of cols) {
+  for (const t of types) {
     const th = document.createElement("th");
-    th.textContent = tag.replace(/_/g, " ");
+    th.textContent = t.charAt(0).toUpperCase() + t.slice(1);
     htr.appendChild(th);
   }
-  const thOther = document.createElement("th");
-  thOther.textContent = cols.length ? "Other" : "Outfit";
-  htr.appendChild(thOther);
   thead.appendChild(htr);
 
-  // For each day, distribute items
+  // Render rows
   for (const { date, items } of days) {
     const tr = document.createElement("tr");
     const tdDate = document.createElement("td");
@@ -671,50 +747,25 @@ function renderRecentWornTable(days, topTags) {
     tdDate.innerHTML = `<span class="fw-semibold">${date}</span>`;
     tr.appendChild(tdDate);
 
-    // buckets per column tag
-    const tagBuckets = new Map(cols.map((t) => [t, []]));
-    const other = [];
+    const bucket = { top: [], bottom: [], outer: [], accessory: [], shoes: [] };
     for (const name of items || []) {
-      const tags = (closet.find((x) => x.name === name)?.tags || []).map(
-        String,
-      );
-      let matched = false;
-      for (const t of cols) {
-        if (tags.includes(t)) {
-          tagBuckets.get(t).push(name);
-          matched = true;
-        }
-      }
-      if (!matched) other.push(name);
+      const type = findType(name);
+      bucket[type].push(displayLabel(name));
     }
 
-    // emit tag columns
-    for (const t of cols) {
+    for (const t of types) {
       const td = document.createElement("td");
       td.className = "outfit-cell";
-      const names = tagBuckets.get(t) || [];
-      td.innerHTML = names
+      td.innerHTML = bucket[t]
         .map(
           (n) =>
             `<span class="badge rounded-pill text-bg-light">${escapeHtml(
-              n,
-            )}</span>`,
+              n
+            )}</span>`
         )
         .join("");
       tr.appendChild(td);
     }
-    // emit Other / Outfit
-    const tdOther = document.createElement("td");
-    tdOther.className = "outfit-cell";
-    tdOther.innerHTML = other
-      .map(
-        (n) =>
-          `<span class="badge rounded-pill text-bg-light">${escapeHtml(
-            n,
-          )}</span>`,
-      )
-      .join("");
-    tr.appendChild(tdOther);
     tbody.appendChild(tr);
   }
 }
